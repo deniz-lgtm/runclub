@@ -11,6 +11,11 @@ export const metadata: Metadata = {
   title: "Friends Who Run",
   description: "Your crew. Your miles. Your race.",
   applicationName: "Friends Who Run",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: "/icon.svg",
+    apple: "/icon.svg",
+  },
   appleWebApp: {
     capable: true,
     title: "FWR",
@@ -22,7 +27,9 @@ export const viewport: Viewport = {
   themeColor: "#FF6B35",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

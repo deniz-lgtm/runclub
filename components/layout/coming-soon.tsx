@@ -18,7 +18,7 @@ export function ComingSoon({
   checklist,
 }: ComingSoonProps) {
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 md:px-8">
+    <div className="w-full px-4">
       <Card className="border-dashed">
         <CardContent className="flex flex-col items-start gap-3 p-6">
           <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">

@@ -4,8 +4,8 @@ import { usePathname } from "next/navigation";
 import { NAV_ITEMS } from "./nav-items";
 
 /**
- * Mobile-only header. Shows the current tab's name and a subtle brand mark.
- * Desktop uses the sidebar for navigation context instead.
+ * Sticky top header. Shows the current tab's name and a subtle brand
+ * mark. Always visible (mobile-only app).
  */
 export function MobileHeader() {
   const pathname = usePathname();
@@ -16,7 +16,7 @@ export function MobileHeader() {
     ) ?? NAV_ITEMS[0];
 
   return (
-    <header className="md:hidden sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur safe-top">
+    <header className="sticky top-0 z-30 border-b border-border bg-surface/95 backdrop-blur safe-top">
       <div className="flex items-center justify-between px-4 py-3">
         <div className="flex items-center gap-2">
           <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-primary-foreground text-xs font-bold">

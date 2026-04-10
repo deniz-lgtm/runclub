@@ -8,9 +8,8 @@ interface PageHeaderProps {
 }
 
 /**
- * Consistent page header for top-level tab pages.
- * Renders large on desktop, compact on mobile (since MobileHeader already
- * shows the tab name).
+ * Per-page header. Rendered inside the mobile viewport — mobile
+ * typography, no desktop variants.
  */
 export function PageHeader({
   title,
@@ -19,21 +18,12 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div
-      className={cn(
-        "flex flex-col gap-2 px-4 pt-4 pb-2 md:px-8 md:pt-8 md:pb-4",
-        className,
-      )}
-    >
+    <div className={cn("flex flex-col gap-2 px-4 pt-5 pb-3", className)}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight md:text-3xl">
-            {title}
-          </h1>
+          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
           {description && (
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">
-              {description}
-            </p>
+            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
           )}
         </div>
         {children && <div className="flex items-center gap-2">{children}</div>}

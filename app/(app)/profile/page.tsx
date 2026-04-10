@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
+import { ProfileSummary } from "@/components/profile/profile-summary";
 import {
   Card,
   CardContent,
@@ -8,61 +9,25 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { initials } from "@/lib/utils";
+import { requireProfile } from "@/lib/auth";
+import { signOut } from "@/app/(auth)/login/actions";
 
 /**
- * Profile tab — Phase 1A placeholder.
+ * Your own profile page.
  *
- * Phase 1B wires this up to the real signed-in user via Supabase auth.
- * For now it renders a demo profile card so the tab isn't empty, plus
- * placeholders for Connected Apps and settings links.
+ * Requires a completed profile — `requireProfile()` will redirect to
+ * /login if unauth or /onboarding if the profile row is missing.
  */
-export default function ProfilePage() {
-  const demo = {
-    displayName: "Deanna",
-    username: "deanna",
-    bio: "Making running social, one group run at a time. LA Marathon 2027. ✨",
-    city: "Los Angeles, CA",
-    weeklyGoal: 35,
-    shoe: "On Cloudmonster",
-    distance: "Marathon",
-  };
+export default async function ProfilePage() {
+  const profile = await requireProfile();
 
   return (
     <>
       <PageHeader title="Profile" />
 
-      <div className="mx-auto w-full max-w-3xl px-4 md:px-8 space-y-4">
-        {/* Profile summary */}
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-start gap-4">
-              <Avatar className="h-16 w-16">
-                <AvatarFallback className="text-lg">
-                  {initials(demo.displayName)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-bold">{demo.displayName}</h2>
-                  <Badge variant="muted">@{demo.username}</Badge>
-                </div>
-                <p className="mt-0.5 text-sm text-muted-foreground">
-                  {demo.city} • {demo.distance}
-                </p>
-                <p className="mt-3 text-sm">{demo.bio}</p>
-              </div>
-            </div>
-
-            <div className="mt-5 grid grid-cols-3 gap-3 border-t border-border pt-5">
-              <Stat label="Weekly goal" value={`${demo.weeklyGoal} mi`} />
-              <Stat label="Current shoe" value={demo.shoe} />
-              <Stat label="Clubs" value="1" />
-            </div>
-          </CardContent>
-        </Card>
+      <div className="w-full px-4 space-y-4">
+        <ProfileSummary profile={profile} />
 
         {/* Connected apps */}
         <Card>
@@ -74,19 +39,22 @@ export default function ProfilePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-2">
-            <ConnectionRow name="Strava" note="Pull activities, routes, and maps" />
+            <ConnectionRow
+              name="Strava"
+              note="Activities, routes, and maps"
+            />
             <ConnectionRow
               name="TrainingPeaks"
-              note="Sync your coach-built training plan"
+              note="Coach-built training plan"
             />
             <ConnectionRow
               name="Final Surge"
-              note="Sync your coach-built training plan"
+              note="Coach-built training plan"
             />
           </CardContent>
         </Card>
 
-        {/* Settings */}
+        {/* Settings + sign out */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Settings</CardTitle>
@@ -103,6 +71,15 @@ export default function ProfilePage() {
             <Button variant="outline" asChild>
               <Link href="/friends">Friends</Link>
             </Button>
+            <form action={signOut}>
+              <Button
+                variant="ghost"
+                type="submit"
+                className="w-full text-destructive hover:bg-destructive/5 hover:text-destructive"
+              >
+                Sign out
+              </Button>
+            </form>
           </CardContent>
         </Card>
       </div>
@@ -110,23 +87,12 @@ export default function ProfilePage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="text-[11px] uppercase tracking-wide text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-0.5 text-sm font-semibold tabular-nums">{value}</div>
-    </div>
-  );
-}
-
 function ConnectionRow({ name, note }: { name: string; note: string }) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
-      <div>
+      <div className="min-w-0">
         <div className="text-sm font-semibold">{name}</div>
-        <div className="text-xs text-muted-foreground">{note}</div>
+        <div className="truncate text-xs text-muted-foreground">{note}</div>
       </div>
       <Badge variant="muted">Not connected</Badge>
     </div>

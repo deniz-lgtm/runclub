@@ -6,14 +6,15 @@ import { NAV_ITEMS } from "./nav-items";
 import { cn } from "@/lib/utils";
 
 /**
- * Mobile bottom nav (hidden on desktop).
- * Fixed to the bottom of the viewport, respects iOS safe area.
+ * Mobile bottom nav — the primary navigation surface of the app.
+ * Fixed to the bottom of the phone viewport, respects iOS safe area.
+ * Always visible (no desktop variant — this is a mobile-only app).
  */
 export function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-surface/95 backdrop-blur safe-bottom">
+    <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-md -translate-x-1/2 border-t border-border bg-surface/95 backdrop-blur safe-bottom">
       <ul className="flex items-stretch justify-between px-1">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;

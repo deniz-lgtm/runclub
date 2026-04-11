@@ -30,6 +30,8 @@ export default async function PlanDetailPage({
       (new Date() < fromISODate(plan.goal_race_date) ? 1 : -1)
     : null;
 
+  const isAiGenerated = plan.plan_type === "ai_generated";
+
   return (
     <>
       <PageHeader title={plan.title} description={plan.goal_race ?? undefined}>
@@ -46,6 +48,7 @@ export default async function PlanDetailPage({
           <Badge variant={plan.status === "active" ? "default" : "muted"}>
             {plan.status}
           </Badge>
+          {isAiGenerated && <Badge variant="flash">AI generated</Badge>}
           {plan.sync_source !== "none" && (
             <Badge variant="secondary">
               Synced from{" "}
@@ -60,6 +63,15 @@ export default async function PlanDetailPage({
             </Badge>
           )}
         </div>
+
+        {/* AI coach adjust button */}
+        {isAiGenerated && (
+          <Button variant="outline" asChild>
+            <Link href={`/coach?plan=${plan.id}`}>
+              Ask coach to adjust this plan
+            </Link>
+          </Button>
+        )}
 
         {/* Progress dashboard */}
         <PlanProgress

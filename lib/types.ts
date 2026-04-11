@@ -41,6 +41,13 @@ export interface Profile {
   is_public: boolean;
 }
 
+export type PlanType =
+  | "self_created"
+  | "coach_assigned"
+  | "ai_generated"
+  | "synced_trainingpeaks"
+  | "synced_finalsurge";
+
 export interface TrainingPlan {
   id: string;
   user_id: string;
@@ -50,6 +57,8 @@ export interface TrainingPlan {
   status: PlanStatus;
   visibility: PlanVisibility;
   sync_source: SyncSource;
+  plan_type: PlanType;
+  notes: string | null;
 }
 
 export interface TrainingPlanWorkout {

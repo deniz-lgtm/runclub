@@ -50,6 +50,9 @@ export default async function FeedPage() {
               <Link href="/calendar">Open calendar</Link>
             </Button>
             <Button variant="outline" asChild>
+              <Link href="/coach">Ask your coach</Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link href="/friends">Find friends</Link>
             </Button>
           </CardContent>

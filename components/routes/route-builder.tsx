@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
+import { LocationPicker, type PickedLocation } from "./location-picker";
 import { saveRoute } from "@/app/(app)/routes/actions";
-import { ElevationChart } from "./elevation-chart";
 import { Loader2, MapPin, Undo2, X, CornerDownRight } from "lucide-react";
 
 /**
@@ -60,6 +60,7 @@ export function RouteBuilder({ mapboxPublicToken }: RouteBuilderProps) {
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const [pending, startTransition] = useTransition();
+  const [jumpLocation, setJumpLocation] = useState<PickedLocation | null>(null);
 
   // Refs that mirror state so the map click handler (which is bound
   // once) can always see the latest value.
@@ -157,6 +158,25 @@ export function RouteBuilder({ mapboxPublicToken }: RouteBuilderProps) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapboxPublicToken]);
+
+  // ──────────────────────────────────────────────────────────────────
+  // Jump map to picked location when the LocationPicker changes
+  // ──────────────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!mapReady || !mapRef.current || !jumpLocation) return;
+    const map = mapRef.current as {
+      flyTo: (opts: {
+        center: [number, number];
+        zoom?: number;
+        essential?: boolean;
+      }) => void;
+    };
+    map.flyTo({
+      center: [jumpLocation.lng, jumpLocation.lat],
+      zoom: 14,
+      essential: true,
+    });
+  }, [jumpLocation, mapReady]);
 
   // ──────────────────────────────────────────────────────────────────
   // Render waypoint markers on the map
@@ -445,9 +465,18 @@ export function RouteBuilder({ mapboxPublicToken }: RouteBuilderProps) {
         </div>
         <p className="mt-1 text-xs leading-snug text-ink-muted">
           Each tap drops a waypoint. We auto-route along the walking
-          path from the last waypoint to the new one and add it to
-          your total.
+          path from the last waypoint to the new one. Jump to any
+          city or address below to plan a run anywhere.
         </p>
+      </div>
+
+      {/* Location picker — jumps the map to any searched location */}
+      <div className="rounded-sm border border-ink/10 bg-surface p-3">
+        <LocationPicker
+          value={jumpLocation}
+          onChange={setJumpLocation}
+          placeholder="Jump to a city or address…"
+        />
       </div>
 
       {/* Map */}

@@ -137,6 +137,50 @@ export async function sampleElevations(
   return out;
 }
 
+/** One forward-geocode result. */
+export interface GeocodeResult {
+  name: string; // "Central Park"
+  place_name: string; // "Central Park, New York, New York 10024, United States"
+  lat: number;
+  lng: number;
+}
+
+/**
+ * Forward geocode — search for a place by name/address and get back
+ * up to 5 matching locations. Used by the route builder + generator
+ * to let the runner plan a route anywhere, not just their current
+ * location.
+ */
+export async function forwardGeocode(
+  query: string,
+): Promise<GeocodeResult[]> {
+  if (!query.trim()) return [];
+  try {
+    const encoded = encodeURIComponent(query.trim());
+    const url =
+      `${MAPBOX_BASE}/geocoding/v5/mapbox.places/${encoded}.json` +
+      `?types=address,place,poi,locality,neighborhood` +
+      `&limit=5&access_token=${token()}`;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) return [];
+    const json = (await res.json()) as {
+      features: Array<{
+        text: string;
+        place_name: string;
+        center: [number, number];
+      }>;
+    };
+    return (json.features ?? []).map((f) => ({
+      name: f.text,
+      place_name: f.place_name,
+      lng: f.center[0],
+      lat: f.center[1],
+    }));
+  } catch {
+    return [];
+  }
+}
+
 /** Reverse geocode a coordinate to a human-readable address. */
 export async function reverseGeocode(
   lat: number,

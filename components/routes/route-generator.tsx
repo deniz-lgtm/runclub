@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RouteMap } from "./route-map";
 import { ElevationChart } from "./elevation-chart";
+import { LocationPicker, type PickedLocation } from "./location-picker";
 import { saveRoute } from "@/app/(app)/routes/actions";
 import type { RouteCandidate } from "@/lib/routes";
 import { cn } from "@/lib/utils";
-import { Loader2, MapPin } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface RouteGeneratorProps {
   mapboxPublicToken: string | null;
@@ -35,8 +36,7 @@ export function RouteGenerator({
   linkedWorkoutId = null,
 }: RouteGeneratorProps) {
   // Form state
-  const [startLat, setStartLat] = useState<number | null>(null);
-  const [startLng, setStartLng] = useState<number | null>(null);
+  const [location, setLocation] = useState<PickedLocation | null>(null);
   const [distance, setDistance] = useState(defaultDistance);
   const [routeType, setRouteType] = useState<RouteType>("loop");
   const [terrain, setTerrain] = useState<Terrain>("no_preference");
@@ -57,25 +57,8 @@ export function RouteGenerator({
     );
   }
 
-  function detectLocation() {
-    if (!navigator.geolocation) {
-      setError("Geolocation not supported by this browser.");
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setStartLat(pos.coords.latitude);
-        setStartLng(pos.coords.longitude);
-        setError(null);
-      },
-      () => {
-        setError("Couldn't get your location. Enter it manually or try again.");
-      },
-    );
-  }
-
   async function generate() {
-    if (startLat == null || startLng == null) {
+    if (!location) {
       setError("Pick a start location first.");
       return;
     }
@@ -89,7 +72,7 @@ export function RouteGenerator({
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          start: { lat: startLat, lng: startLng },
+          start: { lat: location.lat, lng: location.lng },
           target_distance_miles: distance,
           route_type: routeType,
           terrain_preference: terrain,
@@ -117,14 +100,14 @@ export function RouteGenerator({
   }
 
   function handleSave() {
-    if (!candidates || startLat == null || startLng == null) return;
+    if (!candidates || !location) return;
     const candidate = candidates[selectedIdx];
 
     startTransition(async () => {
       const result = await saveRoute({
         title: `${candidate.actual_distance_miles}mi ${routeType === "loop" ? "loop" : routeType === "out_and_back" ? "out & back" : "route"}`,
         candidate,
-        start: { lat: startLat, lng: startLng },
+        start: { lat: location.lat, lng: location.lng, address: location.label },
         target_distance_miles: distance,
         route_type: routeType,
         terrain_preference: terrain,
@@ -145,29 +128,7 @@ export function RouteGenerator({
       {/* Input form */}
       <Card>
         <CardContent className="flex flex-col gap-4 p-4">
-          {/* Start location */}
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-              Start location
-            </label>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={detectLocation}
-                className="flex-1"
-              >
-                <MapPin className="h-3.5 w-3.5" />
-                {startLat != null ? "Update location" : "Use my location"}
-              </Button>
-            </div>
-            {startLat != null && startLng != null && (
-              <p className="text-[11px] tabular-nums text-muted-foreground">
-                {startLat.toFixed(4)}, {startLng.toFixed(4)}
-              </p>
-            )}
-          </div>
+          <LocationPicker value={location} onChange={setLocation} />
 
           {/* Distance slider */}
           <div className="flex flex-col gap-1.5">
@@ -259,8 +220,9 @@ export function RouteGenerator({
 
           <Button
             onClick={generate}
+            variant="flash"
             size="lg"
-            disabled={loading || startLat == null}
+            disabled={loading || !location}
           >
             {loading ? (
               <>
@@ -271,7 +233,11 @@ export function RouteGenerator({
               "Generate route"
             )}
           </Button>
-          {error && <p className="text-xs text-destructive">{error}</p>}
+          {error && (
+            <p className="font-mono text-[10px] uppercase tracking-bib text-siren">
+              {error}
+            </p>
+          )}
         </CardContent>
       </Card>
 
@@ -324,11 +290,11 @@ export function RouteGenerator({
                 </div>
               </div>
 
-              {startLat != null && startLng != null && (
+              {location && (
                 <RouteMap
                   geometry={candidates[selectedIdx].geometry}
-                  startLat={startLat}
-                  startLng={startLng}
+                  startLat={location.lat}
+                  startLng={location.lng}
                   mapboxToken={mapboxPublicToken}
                 />
               )}

@@ -74,7 +74,11 @@ export interface RunClub {
   name: string;
   slug: string;
   description: string | null;
+  logo_url: string | null;
+  cover_image_url: string | null;
   city: string | null;
   state: string | null;
+  website_url: string | null;
   is_verified: boolean;
+  membership_type: "open" | "request_to_join" | "invite_only";
 }

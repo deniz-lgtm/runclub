@@ -1,15 +1,13 @@
-import { Card, CardContent } from "@/components/ui/card";
-
 interface ComingSoonProps {
-  phase: string; // e.g. "Phase 1C"
-  feature: string; // e.g. "The hero calendar"
+  phase: string;
+  feature: string;
   description: string;
   checklist?: string[];
 }
 
 /**
- * Phase 1A tab stub. Communicates *what* is coming and *when* so this
- * isn't just a blank screen while we build out the rest of the app.
+ * Phase stub. Editorial "prototype" sheet with hairline dashed border
+ * and an indexed checklist of what's coming.
  */
 export function ComingSoon({
   phase,
@@ -18,26 +16,40 @@ export function ComingSoon({
   checklist,
 }: ComingSoonProps) {
   return (
-    <div className="w-full px-4">
-      <Card className="border-dashed">
-        <CardContent className="flex flex-col items-start gap-3 p-6">
-          <span className="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-primary">
-            {phase}
+    <div className="column">
+      <div className="rounded-sm border border-dashed border-ink/30 bg-surface p-6">
+        <div className="flex items-center justify-between">
+          <span className="label-bib">{phase}</span>
+          <span className="font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+            Prototype
           </span>
-          <h2 className="text-xl font-semibold leading-tight">{feature}</h2>
-          <p className="text-sm text-muted-foreground">{description}</p>
-          {checklist && checklist.length > 0 && (
-            <ul className="mt-2 flex flex-col gap-2 text-sm">
-              {checklist.map((item) => (
-                <li key={item} className="flex items-start gap-2">
-                  <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
-                  <span>{item}</span>
+        </div>
+        <h2 className="mt-2 font-display text-2xl font-black leading-[0.95] tracking-tightest text-ink">
+          {feature}
+        </h2>
+        <p className="mt-3 text-sm leading-snug text-ink-muted">
+          {description}
+        </p>
+        {checklist && checklist.length > 0 && (
+          <>
+            <div className="mt-5 flex items-center gap-2">
+              <div className="h-px flex-1 bg-ink/15" />
+              <span className="label-bib">Scope</span>
+              <div className="h-px flex-1 bg-ink/15" />
+            </div>
+            <ul className="mt-3 flex flex-col gap-2">
+              {checklist.map((item, i) => (
+                <li key={item} className="flex items-start gap-3 text-sm">
+                  <span className="bib shrink-0">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span className="leading-snug text-ink">{item}</span>
                 </li>
               ))}
             </ul>
-          )}
-        </CardContent>
-      </Card>
+          </>
+        )}
+      </div>
     </div>
   );
 }

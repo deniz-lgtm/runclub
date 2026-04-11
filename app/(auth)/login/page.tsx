@@ -1,49 +1,63 @@
 import Link from "next/link";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { LoginForm } from "@/components/auth/login-form";
 
 /**
- * Sign-in page.
+ * Sign-in page — editorial / race-bib treatment.
  *
- * Server component wrapper around the <LoginForm/> client component,
- * which handles the magic-link + Google OAuth flows via server actions.
+ * Full-screen ink field with a bone-colored content panel. Big
+ * display wordmark, tagline in uppercase, form below. Feels like
+ * the front of a race program.
  */
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <Card className="w-full max-w-md border-border/80 shadow-lg">
-        <CardHeader className="items-center text-center">
-          <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-2xl font-bold text-primary-foreground shadow-md shadow-primary/25">
-            F
-          </div>
-          <CardTitle className="text-2xl">Friends Who Run</CardTitle>
-          <CardDescription>Your crew. Your miles. Your race.</CardDescription>
-        </CardHeader>
+    <div className="flex min-h-screen items-center justify-center bg-ink p-4">
+      <div className="mx-auto flex w-full max-w-md flex-col">
+        {/* Ink page framing — top bib */}
+        <div className="mb-1 flex items-center justify-between text-white/50">
+          <span className="font-mono text-[9px] font-bold uppercase tracking-bib">
+            SESSION 01
+          </span>
+          <span className="font-mono text-[9px] font-bold uppercase tracking-bib">
+            FWR · SIGN IN
+          </span>
+        </div>
+        <div className="h-px bg-white/20" />
 
-        <CardContent className="flex flex-col gap-4">
+        {/* Hero wordmark on ink */}
+        <div className="mt-10 mb-6 text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-xs bg-flash">
+            <span className="font-display text-3xl font-black text-ink">F</span>
+          </div>
+          <h1 className="font-display text-5xl font-black leading-[0.85] tracking-tightest text-white">
+            FRIENDS
+            <br />
+            WHO RUN
+          </h1>
+          <p className="mt-4 font-mono text-[10px] font-bold uppercase tracking-bib text-flash">
+            Your crew · Your miles · Your race
+          </p>
+        </div>
+
+        {/* Form card on bone */}
+        <div className="rounded-sm bg-bone p-6">
+          <div className="label-bib mb-4">Sign in</div>
           <LoginForm />
 
-          <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            By continuing you agree to our Terms of Service and Privacy Policy.
-          </p>
-
-          <div className="text-center text-xs text-muted-foreground">
-            First time here?{" "}
-            <Link
-              href="/onboarding"
-              className="font-semibold text-primary hover:underline"
-            >
-              Set up your profile
-            </Link>
+          <div className="mt-6 border-t border-ink/10 pt-4 text-center">
+            <p className="font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+              New here?{" "}
+              <Link href="/onboarding" className="text-ink hover:text-flash">
+                Start your profile →
+              </Link>
+            </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+
+        {/* Legal */}
+        <p className="mt-6 text-center font-mono text-[9px] uppercase tracking-bib text-white/40">
+          By continuing you agree to our Terms & Privacy Policy
+        </p>
+      </div>
     </div>
   );
 }

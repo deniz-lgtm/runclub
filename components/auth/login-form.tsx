@@ -8,8 +8,8 @@ import {
 } from "@/app/(auth)/login/actions";
 
 /**
- * Client-side login form. Handles the transitions + inline feedback
- * so the server actions can stay pure.
+ * Login form — editorial treatment with sharper inputs, ink buttons,
+ * and mono "magic link sent" confirmation.
  */
 export function LoginForm() {
   const [pending, startTransition] = useTransition();
@@ -42,11 +42,16 @@ export function LoginForm() {
 
   if (state.kind === "sent") {
     return (
-      <div className="rounded-lg border border-primary/30 bg-primary/5 p-4 text-sm">
-        <p className="font-semibold">Check your inbox</p>
-        <p className="mt-1 text-muted-foreground">
-          We sent a magic link to <span className="font-medium">{state.email}</span>.
-          Click it to sign in — no password required.
+      <div className="rounded-xs border border-flash bg-flash/10 p-4">
+        <div className="label-bib text-flash">Check your inbox</div>
+        <p className="mt-2 font-display text-base font-extrabold leading-tight tracking-tight text-ink">
+          Magic link sent
+        </p>
+        <p className="mt-1 font-mono text-[10px] text-ink-muted">
+          {state.email}
+        </p>
+        <p className="mt-3 text-xs leading-snug text-ink-muted">
+          Click the link in the email to sign in — no password required.
         </p>
       </div>
     );
@@ -55,7 +60,6 @@ export function LoginForm() {
   return (
     <div className="flex flex-col gap-3">
       <Button
-        variant="outline"
         size="lg"
         className="w-full"
         onClick={handleGoogle}
@@ -67,10 +71,12 @@ export function LoginForm() {
         Continue with Apple
       </Button>
 
-      <div className="my-2 flex items-center gap-3 text-[11px] uppercase tracking-wider text-muted-foreground">
-        <div className="h-px flex-1 bg-border" />
-        or
-        <div className="h-px flex-1 bg-border" />
+      <div className="my-2 flex items-center gap-3">
+        <div className="h-px flex-1 bg-ink/15" />
+        <span className="font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+          Or email
+        </span>
+        <div className="h-px flex-1 bg-ink/15" />
       </div>
 
       <form action={handleMagicLink} className="flex flex-col gap-2">
@@ -82,16 +88,24 @@ export function LoginForm() {
           name="email"
           type="email"
           required
-          placeholder="you@example.com"
-          className="h-11 rounded-lg border border-border bg-surface px-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+          placeholder="you@email.com"
+          className="h-12 rounded-xs border border-ink/20 bg-surface px-4 font-mono text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
         />
-        <Button type="submit" size="lg" className="w-full" disabled={pending}>
+        <Button
+          variant="flash"
+          type="submit"
+          size="lg"
+          className="w-full"
+          disabled={pending}
+        >
           {pending ? "Sending…" : "Send magic link"}
         </Button>
       </form>
 
       {state.kind === "error" && (
-        <p className="text-xs text-destructive">{state.message}</p>
+        <p className="font-mono text-[10px] uppercase tracking-bib text-siren">
+          {state.message}
+        </p>
       )}
     </div>
   );

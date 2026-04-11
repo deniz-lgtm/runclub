@@ -8,7 +8,7 @@ import { formatLongDate } from "@/lib/date-utils";
 import { initials } from "@/lib/utils";
 import type { TrainingPlanWorkout } from "@/lib/types";
 import type { ClubEvent, FriendRun } from "@/lib/mock-data";
-import { Clock, MapPin, Users } from "lucide-react";
+import { Clock, MapPin } from "lucide-react";
 
 interface DayDetailProps {
   date: Date;
@@ -18,9 +18,9 @@ interface DayDetailProps {
 }
 
 /**
- * "Selected day" card that sits below the calendar.
- * Shows your workout (if any), friends who are running that day, and
- * any club events. This is how the runner jumps from calendar → action.
+ * Day detail — the selected day's full breakdown. Editorial panel
+ * with the date as a display headline, workout details, crew runs,
+ * and club events sorted into labeled sections.
  */
 export function DayDetail({
   date,
@@ -29,84 +29,90 @@ export function DayDetail({
   clubEvents,
 }: DayDetailProps) {
   return (
-    <div className="rounded-lg border border-border bg-surface p-4 shadow-sm">
-      <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-bold">{formatLongDate(date)}</h3>
+    <div className="rounded-sm border border-ink/10 bg-surface p-4">
+      {/* Date header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="label-bib">Day</div>
+          <h3 className="font-display text-xl font-extrabold leading-none tracking-tightest text-ink">
+            {formatLongDate(date)}
+          </h3>
+        </div>
         {workout && (
           <WorkoutChip
             type={workout.workout_type}
             label={styleForWorkout(workout.workout_type).label}
-            size="sm"
+            size="md"
           />
         )}
       </div>
 
       {/* Your workout */}
       {workout ? (
-        <div className="rounded-md border border-border bg-muted/20 p-3">
+        <div className="mt-4 border-t border-ink/10 pt-3">
           <div className="flex items-center justify-between">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              Your workout
-            </div>
+            <span className="label-bib">Workout</span>
             {workout.is_completed && (
-              <span className="text-[10px] font-semibold text-secondary">
-                ✓ Completed
+              <span className="font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+                ✓ Done
               </span>
             )}
           </div>
-          <div className="mt-1.5 text-sm font-semibold">{workout.title}</div>
+          <div className="mt-2 font-display text-base font-extrabold tracking-tight text-ink">
+            {workout.title}
+          </div>
           {workout.description && (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs leading-snug text-ink-muted">
               {workout.description}
             </p>
           )}
-          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-[11px] text-muted-foreground">
+          <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 font-mono text-[10px] font-bold uppercase tracking-bib text-ink-muted">
             {workout.target_distance_miles != null && (
-              <span className="font-semibold tabular-nums text-foreground">
-                {workout.target_distance_miles} mi
+              <span className="tabular-nums text-ink">
+                {workout.target_distance_miles}MI
               </span>
             )}
             {workout.scheduled_time && (
-              <span className="inline-flex items-center gap-1">
-                <Clock className="h-3 w-3" />
+              <span className="inline-flex items-center gap-0.5">
+                <Clock className="h-2.5 w-2.5" />
                 {formatTime(workout.scheduled_time)}
               </span>
             )}
             {workout.location && (
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
+              <span className="inline-flex items-center gap-0.5">
+                <MapPin className="h-2.5 w-2.5" />
                 {workout.location}
               </span>
             )}
           </div>
           {!workout.is_completed && workout.workout_type !== "rest" && (
             <div className="mt-3 flex gap-2">
-              <Button size="sm" className="flex-1">
+              <Button variant="flash" size="sm" className="flex-1">
                 Open to friends
               </Button>
-              <Button size="sm" variant="outline" className="flex-1">
+              <Button variant="outline" size="sm" className="flex-1">
                 Find a route
               </Button>
             </div>
           )}
         </div>
       ) : (
-        <div className="rounded-md border border-dashed border-border bg-muted/20 p-3 text-center text-xs text-muted-foreground">
-          No workout scheduled.
+        <div className="mt-4 border-t border-ink/10 pt-3 text-center">
+          <span className="label-bib">∅ Unscheduled</span>
         </div>
       )}
 
       {/* Friend runs */}
       {friendRuns.length > 0 && (
-        <div className="mt-3">
-          <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            <Users className="h-3 w-3" /> Friends running
+        <div className="mt-4 border-t border-ink/10 pt-3">
+          <div className="label-bib mb-2">
+            Crew · {friendRuns.length} running
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             {friendRuns.map((run) => (
               <div
                 key={run.id}
-                className="flex items-center gap-2.5 rounded-md border border-border bg-background/60 p-2"
+                className="flex items-center gap-2.5 rounded-xs border border-ink/10 bg-bone-soft/60 p-2"
               >
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="text-[10px]">
@@ -114,12 +120,11 @@ export function DayDetail({
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-semibold">
+                  <div className="truncate font-display text-xs font-extrabold text-ink">
                     {run.friend_name}
                   </div>
-                  <div className="truncate text-[10px] text-muted-foreground">
-                    {run.title} • {formatTime(run.time)} •{" "}
-                    {run.location}
+                  <div className="truncate font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+                    {run.title} · {formatTime(run.time)} · {run.location}
                   </div>
                 </div>
                 <Button size="sm" variant="outline">
@@ -133,23 +138,23 @@ export function DayDetail({
 
       {/* Club events */}
       {clubEvents.length > 0 && (
-        <div className="mt-3">
-          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Club events
-          </div>
-          <div className="flex flex-col gap-2">
+        <div className="mt-4 border-t border-ink/10 pt-3">
+          <div className="label-bib mb-2">Club events</div>
+          <div className="flex flex-col gap-1.5">
             {clubEvents.map((e) => (
               <div
                 key={e.id}
-                className="flex items-center gap-2 rounded-md border border-accent/40 bg-accent/10 p-2"
+                className="flex items-center gap-2.5 rounded-xs border border-flash/40 bg-flash/10 p-2"
               >
-                <span className="text-lg">🏁</span>
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-xs bg-flash font-mono text-[9px] font-bold uppercase tracking-bib text-ink">
+                  CLUB
+                </span>
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-xs font-semibold">
+                  <div className="truncate font-display text-xs font-extrabold text-ink">
                     {e.title}
                   </div>
-                  <div className="truncate text-[10px] text-muted-foreground">
-                    {e.club_name} • {formatTime(e.time)} • {e.location}
+                  <div className="truncate font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+                    {e.club_name} · {formatTime(e.time)} · {e.location}
                   </div>
                 </div>
                 <Button size="sm" variant="outline">

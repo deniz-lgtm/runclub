@@ -13,7 +13,7 @@ import type { TrainingPlanWorkout } from "@/lib/types";
 import type { ClubEvent, FriendRun } from "@/lib/mock-data";
 
 interface MonthViewProps {
-  month: Date; // any date in the target month
+  month: Date;
   today: Date;
   selectedDate: Date;
   workouts: TrainingPlanWorkout[];
@@ -23,11 +23,9 @@ interface MonthViewProps {
 }
 
 /**
- * Month view — 6×7 grid.
- *
- * Tiny cells with a single color dot for the workout type + indicators
- * for friends/club events. Tapping a cell promotes that day to the
- * selected state and pops the day-detail sheet below.
+ * Month view — stark ink grid on bone. Each day is a square cell with
+ * mono numeric date and a colored workout bar below. Today is a
+ * solid ink square. Selected day gets a hairline ink ring.
  */
 export function MonthView({
   month,
@@ -73,22 +71,22 @@ export function MonthView({
   const monthIndex = month.getMonth();
 
   return (
-    <div>
-      {/* Weekday row */}
-      <div className="grid grid-cols-7 gap-1 px-0.5 pb-1.5">
+    <div className="overflow-hidden rounded-sm border border-ink/10 bg-surface">
+      {/* Weekday header row */}
+      <div className="grid grid-cols-7 border-b border-ink/10">
         {Array.from({ length: 7 }).map((_, i) => (
           <div
             key={i}
-            className="text-center text-[9px] font-semibold uppercase tracking-wide text-muted-foreground"
+            className="py-2 text-center text-[9px] font-bold uppercase tracking-bib text-ink-muted"
           >
-            {formatWeekdayShort(i)}
+            {formatWeekdayShort(i).slice(0, 1)}
           </div>
         ))}
       </div>
 
       {/* Day cells */}
-      <div className="grid grid-cols-7 gap-1">
-        {grid.map((day) => {
+      <div className="grid grid-cols-7">
+        {grid.map((day, idx) => {
           const iso = toISODate(day);
           const entry = lookup.get(iso);
           const inMonth = day.getMonth() === monthIndex;
@@ -97,6 +95,8 @@ export function MonthView({
           const style = entry?.workout
             ? styleForWorkout(entry.workout.workout_type)
             : null;
+          const rowEnd = idx % 7 === 6;
+          const lastRow = idx >= 35;
 
           return (
             <button
@@ -104,39 +104,41 @@ export function MonthView({
               type="button"
               onClick={() => onSelectDate(day)}
               className={cn(
-                "relative flex aspect-square flex-col items-center justify-start rounded-md border p-1 text-left transition-colors",
-                inMonth
-                  ? "border-border bg-surface"
-                  : "border-transparent bg-transparent text-muted-foreground/50",
-                isSelected && "border-primary ring-1 ring-primary/40",
+                "relative flex aspect-square flex-col items-start p-1.5 text-left transition-colors",
+                !rowEnd && "border-r border-ink/10",
+                !lastRow && "border-b border-ink/10",
+                inMonth ? "bg-surface" : "bg-bone-soft/50",
+                isSelected && "bg-ink/[0.04] ring-1 ring-inset ring-ink",
               )}
             >
+              {/* Date number */}
               <div
                 className={cn(
-                  "flex h-5 w-5 items-center justify-center self-start text-[10px] font-semibold tabular-nums",
+                  "flex items-center justify-center font-mono text-[11px] font-bold tabular-nums",
+                  inMonth ? "text-ink" : "text-ink/25",
                   isToday &&
-                    "rounded-full bg-primary text-primary-foreground",
+                    "h-[18px] w-[18px] rounded-xs bg-ink text-white",
                 )}
               >
-                {day.getDate()}
+                {String(day.getDate()).padStart(2, "0")}
               </div>
 
-              {/* Workout indicator dot */}
+              {/* Workout indicator bar */}
               {style && (
                 <div
-                  className="absolute bottom-1.5 left-1/2 h-1.5 w-4 -translate-x-1/2 rounded-full"
+                  className="absolute bottom-1.5 left-1.5 right-1.5 h-[3px]"
                   style={{ backgroundColor: style.dot }}
                 />
               )}
 
-              {/* Tiny indicators for friend runs / events */}
+              {/* Friend + club indicators */}
               {entry && (entry.friends.length > 0 || entry.events.length > 0) && (
                 <div className="absolute right-1 top-1 flex gap-0.5">
                   {entry.friends.length > 0 && (
-                    <span className="h-1 w-1 rounded-full bg-secondary" />
+                    <span className="h-1 w-1 rounded-none bg-flash" />
                   )}
                   {entry.events.length > 0 && (
-                    <span className="text-[9px] leading-none">🏁</span>
+                    <span className="h-1 w-1 rounded-none bg-ink" />
                   )}
                 </div>
               )}

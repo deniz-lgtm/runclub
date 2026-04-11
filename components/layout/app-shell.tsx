@@ -9,17 +9,15 @@ import { MobileHeader } from "./mobile-header";
  * (max-w-md ≈ 448px) and centered, so when viewed on desktop it looks
  * like a phone-sized viewport instead of sprawling across the screen.
  *
- * The MobileHeader is sticky at the top, the BottomNav is fixed at the
- * bottom with safe-area padding for iOS home indicator.
+ * On desktop the surrounding frame is solid ink so the bone-colored
+ * phone column stands out like a printed page on a dark table.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    // Outer wrapper — neutral gray on desktop so the phone viewport pops.
-    <div className="min-h-screen bg-muted/40 md:bg-gradient-to-br md:from-muted/60 md:to-muted/20">
-      {/* Phone-width column, centered */}
-      <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background shadow-sm md:my-0 md:min-h-screen md:border-x md:border-border">
+    <div className="min-h-screen bg-ink md:bg-ink">
+      <div className="mx-auto flex min-h-screen max-w-md flex-col bg-bone md:my-0 md:min-h-screen md:border-x md:border-ink/20">
         <MobileHeader />
-        <main className="flex-1 pb-24">{children}</main>
+        <main className="flex-1 pb-28">{children}</main>
         <BottomNav />
       </div>
     </div>

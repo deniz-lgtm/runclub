@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TodayCard } from "./today-card";
 import { WeekSummary } from "./week-summary";
@@ -29,16 +28,6 @@ interface CalendarViewProps {
   clubEvents: ClubEvent[];
 }
 
-/**
- * The Calendar tab's main body. Owns:
- *   - Week/month view toggle
- *   - The "cursor" (selected date)
- *   - Prev/next navigation (by week or by month, depending on view)
- *   - The Today card, This Week summary, the grid, and the day-detail card
- *
- * Data is passed in as props — the page-level server component queries
- * Supabase (or falls back to the mock fixtures) before rendering this.
- */
 export function CalendarView({
   workouts,
   friendRuns,
@@ -49,7 +38,6 @@ export function CalendarView({
   const [cursor, setCursor] = useState<Date>(today);
   const [selectedDate, setSelectedDate] = useState<Date>(today);
 
-  // Current week's workouts/friends/events (for the summary tile).
   const weekWorkouts = useMemo(() => {
     const start = startOfWeek(cursor);
     const dates = new Set(
@@ -66,13 +54,11 @@ export function CalendarView({
     return friendRuns.filter((r) => dates.has(r.date));
   }, [cursor, friendRuns]);
 
-  // Today's workout for the hero card.
   const todaysWorkout = useMemo(() => {
     const iso = toISODate(today);
     return workouts.find((w) => w.scheduled_date === iso) ?? null;
   }, [today, workouts]);
 
-  // Selected day's detail.
   const selectedIso = toISODate(selectedDate);
   const selectedWorkout =
     workouts.find((w) => w.scheduled_date === selectedIso) ?? null;
@@ -95,7 +81,7 @@ export function CalendarView({
 
   return (
     <div className="flex flex-col gap-4 px-4">
-      {/* Today card — only when today is visible in the current view */}
+      {/* Today card */}
       {isSameDay(selectedDate, today) || isCursorInCurrentWeek(cursor, today) ? (
         <TodayCard date={today} workout={todaysWorkout} />
       ) : null}
@@ -105,7 +91,8 @@ export function CalendarView({
 
       {/* View toggle + navigation */}
       <div className="flex items-center justify-between">
-        <div className="inline-flex rounded-lg border border-border bg-surface p-0.5">
+        {/* Segmented toggle */}
+        <div className="inline-flex overflow-hidden rounded-xs border border-ink">
           <ToggleButton
             active={mode === "week"}
             onClick={() => setMode("week")}
@@ -117,39 +104,40 @@ export function CalendarView({
             label="Month"
           />
         </div>
+
+        {/* Prev / Today / Next */}
         <div className="flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
+          <button
+            type="button"
             onClick={navigatePrev}
             aria-label="Previous"
+            className="flex h-8 w-8 items-center justify-center rounded-xs border border-ink/20 bg-surface text-ink transition-colors hover:bg-ink hover:text-white"
           >
             <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
+          </button>
+          <button
+            type="button"
             onClick={navigateToday}
-            className="h-8 px-2 text-[11px]"
+            className="h-8 rounded-xs border border-ink/20 bg-surface px-3 text-[10px] font-bold uppercase tracking-bib text-ink transition-colors hover:bg-ink hover:text-white"
           >
             Today
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
+          </button>
+          <button
+            type="button"
             onClick={navigateNext}
             aria-label="Next"
+            className="flex h-8 w-8 items-center justify-center rounded-xs border border-ink/20 bg-surface text-ink transition-colors hover:bg-ink hover:text-white"
           >
             <ChevronRight className="h-4 w-4" />
-          </Button>
+          </button>
         </div>
       </div>
 
       {/* Period label */}
-      <div className="-mt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-        {headerLabel}
+      <div className="-mt-2 flex items-center gap-2">
+        <div className="h-px flex-1 bg-ink/20" aria-hidden />
+        <div className="label-bib">{headerLabel}</div>
+        <div className="h-px flex-1 bg-ink/20" aria-hidden />
       </div>
 
       {/* Grid */}
@@ -200,8 +188,8 @@ function ToggleButton({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-md px-3 py-1 text-xs font-semibold transition-colors",
-        active ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+        "px-3 py-1.5 text-[10px] font-bold uppercase tracking-bib transition-colors",
+        active ? "bg-ink text-white" : "text-ink hover:bg-ink/5",
       )}
     >
       {label}

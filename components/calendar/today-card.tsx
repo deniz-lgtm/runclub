@@ -1,14 +1,16 @@
 import { Button } from "@/components/ui/button";
 import { WorkoutChip } from "./workout-chip";
 import { styleForWorkout } from "@/lib/workout-colors";
-import { formatMiles } from "@/lib/utils";
 import { formatLongDate } from "@/lib/date-utils";
 import type { TrainingPlanWorkout } from "@/lib/types";
 import { Clock, MapPin } from "lucide-react";
 
 /**
- * Prominent "today's workout" card — pinned to the top of the Calendar
- * tab. Designed to be the first thing the runner sees each morning.
+ * "Today" card — the most-looked-at element in the app. Editorial
+ * treatment: all-caps eyebrow label, huge display title, mono data
+ * row, stark ink-on-bone composition.
+ *
+ * Rest day gets a quieter variant.
  */
 export function TodayCard({
   date,
@@ -17,20 +19,19 @@ export function TodayCard({
   date: Date;
   workout: TrainingPlanWorkout | null;
 }) {
-  // Rest day or nothing scheduled → lighter treatment.
+  // Rest day fallback.
   if (!workout || workout.workout_type === "rest") {
     return (
-      <div className="relative overflow-hidden rounded-lg border border-border bg-muted/40 p-5">
-        <Label>Today • {formatLongDate(date)}</Label>
-        <div className="mt-2 flex items-start gap-3">
-          <div className="text-3xl">😴</div>
-          <div>
-            <h3 className="text-lg font-bold">Rest day</h3>
-            <p className="mt-0.5 text-sm text-muted-foreground">
-              Hydrate, roll out, sleep in. Recovery is training.
-            </p>
-          </div>
+      <div className="relative overflow-hidden rounded-sm border border-ink/10 bg-bone-soft p-5">
+        <div className="label-bib">
+          Today · {formatLongDate(date).toUpperCase()}
         </div>
+        <h3 className="mt-2 font-display text-3xl font-black leading-[0.95] tracking-tightest text-ink">
+          Rest Day
+        </h3>
+        <p className="mt-2 text-sm text-ink-muted">
+          Hydrate. Roll out. Sleep in. Recovery is training.
+        </p>
       </div>
     );
   }
@@ -38,83 +39,102 @@ export function TodayCard({
   const style = styleForWorkout(workout.workout_type);
 
   return (
-    <div
-      className="relative overflow-hidden rounded-lg border bg-surface p-5 shadow-sm"
-      style={{ borderColor: `${style.dot}66` }}
-    >
-      {/* Color accent stripe on the left edge */}
+    <div className="relative overflow-hidden rounded-sm border border-ink bg-ink text-white">
+      {/* Accent stripe in workout color — thin top band */}
       <div
-        className="absolute inset-y-0 left-0 w-1.5"
+        className="h-1 w-full"
         style={{ backgroundColor: style.dot }}
         aria-hidden
       />
 
-      <div className="flex items-center justify-between">
-        <Label>Today • {formatLongDate(date)}</Label>
-        <WorkoutChip
-          type={workout.workout_type}
-          label={style.label}
-          size="sm"
-        />
-      </div>
+      <div className="p-5">
+        {/* Eyebrow row: date + bib index + workout type chip */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-xs border border-white/30 bg-transparent px-1 font-mono text-[10px] font-bold tabular-nums text-white">
+              01
+            </span>
+            <span className="text-[10px] font-bold uppercase tracking-bib text-white/60">
+              Today · {formatLongDate(date)}
+            </span>
+          </div>
+          <WorkoutChip type={workout.workout_type} label={style.label} />
+        </div>
 
-      <h3 className="mt-2 text-lg font-bold leading-tight">{workout.title}</h3>
+        {/* Title */}
+        <h3 className="mt-3 font-display text-3xl font-black leading-[0.95] tracking-tightest text-white">
+          {workout.title}
+        </h3>
 
-      {workout.description && (
-        <p className="mt-1 text-sm text-muted-foreground">
-          {workout.description}
-        </p>
-      )}
-
-      {/* Meta row */}
-      <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-        {workout.target_distance_miles != null && (
-          <span className="font-semibold tabular-nums text-foreground">
-            {formatMiles(workout.target_distance_miles)}
-          </span>
+        {/* Description */}
+        {workout.description && (
+          <p className="mt-2 text-sm leading-snug text-white/70">
+            {workout.description}
+          </p>
         )}
-        {workout.scheduled_time && (
-          <span className="inline-flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            {formatTime(workout.scheduled_time)}
-          </span>
-        )}
-        {workout.location && (
-          <span className="inline-flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            {workout.location}
-          </span>
-        )}
-      </div>
 
-      <div className="mt-4 flex gap-2">
-        <Button size="sm" className="flex-1">
-          Open to friends
-        </Button>
-        <Button size="sm" variant="outline" className="flex-1">
-          Find a route
-        </Button>
+        {/* Data row */}
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-white/10 pt-3">
+          {workout.target_distance_miles != null && (
+            <Data label="Dist">
+              {workout.target_distance_miles.toFixed(1)} mi
+            </Data>
+          )}
+          {workout.scheduled_time && (
+            <Data label="Time" icon={<Clock className="h-2.5 w-2.5" />}>
+              {formatTime(workout.scheduled_time)}
+            </Data>
+          )}
+          {workout.location && (
+            <Data label="Loc" icon={<MapPin className="h-2.5 w-2.5" />}>
+              {workout.location}
+            </Data>
+          )}
+        </div>
+
+        {/* Actions */}
+        <div className="mt-4 flex gap-2">
+          <Button variant="flash" size="sm" className="flex-1">
+            Open to friends
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1 border-white/50 text-white hover:bg-white hover:text-ink"
+          >
+            Find a route
+          </Button>
+        </div>
       </div>
     </div>
   );
 }
 
-function Label({ children }: { children: React.ReactNode }) {
+function Data({
+  label,
+  icon,
+  children,
+}: {
+  label: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
-      {children}
+    <div className="flex flex-col">
+      <span className="text-[8px] font-bold uppercase tracking-bib text-white/40">
+        {label}
+      </span>
+      <span className="flex items-center gap-1 font-mono text-xs font-bold tabular-nums text-white">
+        {icon}
+        {children}
+      </span>
     </div>
   );
 }
 
-/**
- * Format "HH:MM" → "6:30 AM". No timezone conversions — the value is
- * already local wall-clock time.
- */
 function formatTime(hhmm: string): string {
   const [h, m] = hhmm.split(":").map(Number);
   const suffix = h >= 12 ? "PM" : "AM";
   const hr = ((h + 11) % 12) + 1;
   return `${hr}:${String(m).padStart(2, "0")} ${suffix}`;
 }
-

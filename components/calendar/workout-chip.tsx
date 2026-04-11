@@ -10,8 +10,8 @@ interface WorkoutChipProps {
 }
 
 /**
- * Compact pill showing a workout type + label. Used inside calendar
- * day cells, the today card, and day-detail sheets.
+ * Workout-type stamp. Inline with monospace all-caps label — reads
+ * like a race-bib category tag rather than a friendly pill.
  */
 export function WorkoutChip({
   type,
@@ -23,19 +23,18 @@ export function WorkoutChip({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-md border font-semibold",
-        style.bg,
-        style.text,
-        style.border,
-        size === "sm" ? "px-1.5 py-0.5 text-[10px]" : "px-2.5 py-1 text-xs",
-        completed && "line-through opacity-60",
+        "inline-flex items-center gap-1 rounded-xs border border-ink/15 bg-bone-soft font-mono uppercase tracking-bib",
+        size === "sm"
+          ? "px-1 py-0.5 text-[9px] font-bold"
+          : "px-1.5 py-1 text-[10px] font-bold",
+        completed && "line-through opacity-50",
       )}
     >
       <span
-        className="h-1.5 w-1.5 shrink-0 rounded-full"
+        className="h-1.5 w-1.5 shrink-0 rounded-none"
         style={{ backgroundColor: style.dot }}
       />
-      <span className="truncate">{label}</span>
+      <span className="truncate text-ink">{label}</span>
     </div>
   );
 }

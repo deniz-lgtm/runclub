@@ -24,12 +24,11 @@ interface WeekViewProps {
 }
 
 /**
- * Week view — 7 stacked day rows.
+ * Week view — editorial race-list treatment.
  *
- * On a narrow phone screen, a side-by-side grid gives each day way too
- * little room for real info. So week view is a *vertical stack* of
- * day rows, each one rich: weekday label, date, workout chip, miles,
- * friends' runs as avatars, club event markers.
+ * 7 stacked day rows, each one rendered like a line in a race
+ * program: BIB · DAY · DATE — TITLE — meta. Active day gets an ink
+ * background, today gets a flash-orange bib number.
  */
 export function WeekView({
   weekStart,
@@ -40,7 +39,6 @@ export function WeekView({
   clubEvents,
   onSelectDate,
 }: WeekViewProps) {
-  // Index all the events by date once, for O(1) lookups inside the loop.
   const lookup = useMemo(() => {
     const byDate = new Map<
       string,
@@ -71,7 +69,7 @@ export function WeekView({
   const days = getWeekDays(weekStart);
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="overflow-hidden rounded-sm border border-ink/10 bg-surface">
       {days.map((day, idx) => {
         const iso = toISODate(day);
         const entry = lookup.get(iso)!;
@@ -80,6 +78,7 @@ export function WeekView({
         const style = entry.workout
           ? styleForWorkout(entry.workout.workout_type)
           : null;
+        const isLast = idx === days.length - 1;
 
         return (
           <button
@@ -87,38 +86,37 @@ export function WeekView({
             type="button"
             onClick={() => onSelectDate(day)}
             className={cn(
-              "relative flex items-center gap-3 overflow-hidden rounded-lg border bg-surface p-3 text-left transition-all active:scale-[0.99]",
-              isSelected
-                ? "border-primary shadow-sm"
-                : "border-border hover:border-primary/40",
+              "relative flex w-full items-center gap-3 px-3 py-3 text-left transition-colors",
+              !isLast && "border-b border-ink/10",
+              isSelected && "bg-ink/[0.03]",
             )}
           >
-            {/* Color stripe on left edge */}
+            {/* Left accent bar in workout color */}
             {style && (
               <div
-                className="absolute inset-y-0 left-0 w-1"
+                className="absolute inset-y-0 left-0 w-[3px]"
                 style={{ backgroundColor: style.dot }}
                 aria-hidden
               />
             )}
 
-            {/* Date column */}
-            <div className="flex w-12 shrink-0 flex-col items-center pl-1">
+            {/* Bib column — day number + day letter */}
+            <div className="flex w-11 shrink-0 flex-col items-center pl-1">
               <span
                 className={cn(
-                  "text-[10px] font-semibold uppercase tracking-wide",
-                  isToday ? "text-primary" : "text-muted-foreground",
+                  "text-[9px] font-bold uppercase tracking-bib",
+                  isToday ? "text-flash" : "text-ink-muted",
                 )}
               >
                 {formatWeekdayShort(idx)}
               </span>
               <span
                 className={cn(
-                  "mt-0.5 flex h-7 w-7 items-center justify-center rounded-full text-sm font-bold tabular-nums",
-                  isToday && "bg-primary text-primary-foreground",
+                  "mt-0.5 font-display text-xl font-black leading-none tabular-nums",
+                  isToday ? "text-flash" : "text-ink",
                 )}
               >
-                {day.getDate()}
+                {String(day.getDate()).padStart(2, "0")}
               </span>
             </div>
 
@@ -126,38 +124,48 @@ export function WeekView({
             <div className="min-w-0 flex-1">
               {entry.workout ? (
                 <>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={cn(
-                        "truncate text-sm font-semibold",
-                        entry.workout.is_completed &&
-                          "text-muted-foreground line-through",
-                      )}
-                    >
-                      {entry.workout.title}
-                    </span>
+                  <div
+                    className={cn(
+                      "truncate font-display text-sm font-extrabold tracking-tight text-ink",
+                      entry.workout.is_completed && "line-through text-ink-muted",
+                    )}
+                  >
+                    {entry.workout.title}
                   </div>
-                  {entry.workout.target_distance_miles != null && (
-                    <div className="mt-0.5 text-[11px] text-muted-foreground tabular-nums">
-                      {entry.workout.target_distance_miles} mi
-                      {entry.workout.scheduled_time &&
-                        ` • ${formatTime(entry.workout.scheduled_time)}`}
-                    </div>
-                  )}
+                  <div className="mt-0.5 flex items-center gap-2 font-mono text-[10px] font-bold uppercase tracking-wide text-ink-muted">
+                    {entry.workout.target_distance_miles != null && (
+                      <span className="tabular-nums">
+                        {entry.workout.target_distance_miles}MI
+                      </span>
+                    )}
+                    {entry.workout.scheduled_time && (
+                      <>
+                        <span className="text-ink/20">·</span>
+                        <span className="tabular-nums">
+                          {formatTime(entry.workout.scheduled_time)}
+                        </span>
+                      </>
+                    )}
+                    {style && (
+                      <>
+                        <span className="text-ink/20">·</span>
+                        <span>{style.label}</span>
+                      </>
+                    )}
+                  </div>
                 </>
               ) : (
-                <div className="text-xs italic text-muted-foreground">
-                  No workout scheduled
+                <div className="text-xs uppercase tracking-bib text-ink-muted/60">
+                  ∅ Unscheduled
                 </div>
               )}
 
-              {/* Friends + club event indicators */}
               {(entry.friends.length > 0 || entry.events.length > 0) && (
-                <div className="mt-1.5 flex items-center gap-1">
+                <div className="mt-1 flex items-center gap-1">
                   {entry.friends.slice(0, 4).map((f) => (
                     <div
                       key={f.id}
-                      className="h-4 w-4 shrink-0 rounded-full border-2 border-surface"
+                      className="h-1.5 w-4 rounded-none"
                       style={{
                         backgroundColor: styleForWorkout(f.workout_type).dot,
                       }}
@@ -165,31 +173,27 @@ export function WeekView({
                     />
                   ))}
                   {entry.friends.length > 4 && (
-                    <span className="text-[9px] text-muted-foreground">
+                    <span className="font-mono text-[9px] text-ink-muted">
                       +{entry.friends.length - 4}
                     </span>
                   )}
-                  {entry.events.map((e) => (
-                    <span
-                      key={e.id}
-                      className="ml-1 text-[11px]"
-                      title={`${e.club_name} — ${e.title}`}
-                    >
-                      🏁
+                  {entry.events.length > 0 && (
+                    <span className="ml-1 font-mono text-[9px] font-bold uppercase tracking-bib text-flash">
+                      CLUB
                     </span>
-                  ))}
+                  )}
                 </div>
               )}
             </div>
 
-            {/* Right-side status pill */}
+            {/* Right-side status */}
             {entry.workout?.workout_type === "race" && (
-              <span className="ml-auto shrink-0 rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
+              <span className="shrink-0 rounded-xs bg-flash px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-bib text-ink">
                 RACE
               </span>
             )}
             {entry.workout?.is_completed && (
-              <span className="ml-auto shrink-0 rounded-full border border-border bg-muted px-2 py-0.5 text-[9px] font-semibold text-muted-foreground">
+              <span className="shrink-0 rounded-xs border border-ink/20 bg-bone-soft px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
                 DONE
               </span>
             )}

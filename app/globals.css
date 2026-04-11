@@ -5,13 +5,16 @@
 @layer base {
   html {
     -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground;
     font-feature-settings:
       "rlig" 1,
       "calt" 1,
+      "ss01" 1,
       "cv11" 1;
   }
 
@@ -19,13 +22,59 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Selection */
+  ::selection {
+    background-color: #0a0a0a;
+    color: #ffffff;
+  }
 }
 
 @layer components {
+  /* ── Safe-area helpers for iOS ─────────────────────────────────── */
   .safe-bottom {
     padding-bottom: env(safe-area-inset-bottom, 0);
   }
   .safe-top {
     padding-top: env(safe-area-inset-top, 0);
+  }
+
+  /* ── Editorial section label ───────────────────────────────────── */
+  /* Small ALL-CAPS wide-tracked labels used everywhere:
+     "THIS WEEK", "COMING UP", "ROUTES", etc. */
+  .label-bib {
+    @apply text-[10px] font-bold uppercase tracking-bib text-ink-muted;
+  }
+
+  /* ── Hairline divider ──────────────────────────────────────────── */
+  .rule {
+    @apply border-t border-ink/10;
+  }
+
+  /* ── Bib number box ────────────────────────────────────────────── */
+  /* A small square stamp — used for list item counters, route index
+     numbers, etc. Tabular figures inside, ink-on-bone by default. */
+  .bib {
+    @apply inline-flex h-5 min-w-[1.25rem] items-center justify-center
+      rounded-xs border border-ink/20 bg-bone-soft
+      px-1 font-mono text-[10px] font-bold tabular-nums text-ink;
+  }
+
+  /* ── Newsprint column ──────────────────────────────────────────── */
+  .column {
+    @apply w-full px-4;
+  }
+}
+
+@layer utilities {
+  /* Slash mark — used as a decorative rule between UI elements. */
+  .slash-rule {
+    background-image: repeating-linear-gradient(
+      45deg,
+      #0a0a0a 0,
+      #0a0a0a 1px,
+      transparent 1px,
+      transparent 4px
+    );
   }
 }

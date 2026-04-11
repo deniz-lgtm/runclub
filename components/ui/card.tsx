@@ -1,6 +1,10 @@
 import * as React from "react";
 import { cn } from "@/lib/utils";
 
+/**
+ * Card — sharper corners, flatter shadows, thinner borders than
+ * the starter shadcn Card. Looks like a trim card on a press sheet.
+ */
 export const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
@@ -8,7 +12,7 @@ export const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-border bg-surface shadow-sm",
+      "rounded-sm border border-ink/10 bg-surface shadow-flat",
       className,
     )}
     {...props}
@@ -22,7 +26,7 @@ export const CardHeader = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col gap-1.5 p-5", className)}
+    className={cn("flex flex-col gap-1.5 p-4", className)}
     {...props}
   />
 ));
@@ -34,7 +38,10 @@ export const CardTitle = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-lg font-semibold leading-tight", className)}
+    className={cn(
+      "font-display text-lg font-extrabold leading-tight tracking-tightest text-ink",
+      className,
+    )}
     {...props}
   />
 ));
@@ -46,7 +53,7 @@ export const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-ink-muted", className)}
     {...props}
   />
 ));
@@ -56,7 +63,7 @@ export const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-5 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("p-4 pt-0", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
 
@@ -66,7 +73,7 @@ export const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-5 pt-0", className)}
+    className={cn("flex items-center p-4 pt-0", className)}
     {...props}
   />
 ));

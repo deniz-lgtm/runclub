@@ -3,26 +3,37 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * Button — editorial / race-bib variants.
+ *
+ * `default` is the primary action: ink background, white text, uppercase,
+ * wide tracking. Think of it as the "GO" button on a race clock.
+ * `flash` is the orange accent button — used sparingly for the single
+ * biggest action on a screen.
+ * `outline` is a hairline ink border on a transparent background —
+ * the default secondary action.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm font-bold uppercase tracking-bib transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-bone disabled:pointer-events-none disabled:opacity-40",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary-dark active:scale-[0.98]",
+          "bg-ink text-white hover:bg-ink-soft active:translate-y-[1px]",
+        flash:
+          "bg-flash text-ink hover:bg-flash-dark hover:text-white active:translate-y-[1px]",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/90",
+          "bg-flash text-ink hover:bg-flash-dark hover:text-white active:translate-y-[1px]",
         outline:
-          "border border-border bg-surface hover:bg-muted text-foreground",
-        ghost: "hover:bg-muted text-foreground",
-        destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90",
-        link: "text-primary underline-offset-4 hover:underline",
+          "border border-ink bg-transparent text-ink hover:bg-ink hover:text-white",
+        ghost: "text-ink hover:bg-ink/5 normal-case tracking-normal",
+        destructive: "bg-siren text-white hover:bg-red-700",
+        link: "text-ink underline underline-offset-4 hover:text-flash",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3 text-xs",
-        lg: "h-12 px-6 text-base",
+        default: "h-10 px-4 text-[11px]",
+        sm: "h-8 px-3 text-[10px]",
+        lg: "h-12 px-6 text-xs",
         icon: "h-10 w-10",
       },
     },

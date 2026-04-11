@@ -10,11 +10,10 @@
  * more reliable than parsing free-form text.
  */
 
-import Anthropic from "@anthropic-ai/sdk";
 import { getAnthropicClient } from "@/lib/ai";
 import type { WorkoutType } from "@/lib/types";
 
-export const PLAN_MODEL = "claude-sonnet-4-20250514";
+export const PLAN_MODEL = "claude-sonnet-4-6";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Input: what the runner tells us before we generate
@@ -347,63 +346,121 @@ function formatPlanInput(input: PlanInput): string {
 /**
  * Generate a full training plan for the given input.
  *
- * Returns the structured plan. Throws on any Claude error or if
- * Claude refuses to call the tool (shouldn't happen given how the
- * prompt is structured, but we guard against it).
+ * Returns the structured plan. Throws with an actionable error
+ * message on any failure — the UI surfaces `err.message` directly so
+ * each branch below is something a runner can understand.
+ *
+ * Size budget: a 20-week marathon plan with 7 workouts per week is
+ * ~140 workouts of structured JSON, roughly 10-14k output tokens
+ * once you include descriptions and pace targets. We give Claude
+ * 16k tokens of headroom so the response always fits.
  */
 export async function generatePlan(input: PlanInput): Promise<GeneratedPlan> {
   const client = getAnthropicClient();
   const userText = formatPlanInput(input);
 
-  const response = await client.messages.create({
-    model: PLAN_MODEL,
-    max_tokens: 8192,
-    system: [
-      {
-        type: "text",
-        text: PLAN_SYSTEM_PROMPT,
-        // @ts-expect-error cache_control is a beta feature
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    // @ts-expect-error tools is part of the Anthropic tool-use API
-    tools: [PLAN_TOOL],
-    // @ts-expect-error tool_choice forces Claude to call our tool
-    tool_choice: { type: "tool", name: "submit_training_plan" },
-    messages: [
-      {
-        role: "user",
-        content: userText,
-      },
-    ],
-  });
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let response: any;
+  try {
+    response = await client.messages.create({
+      model: PLAN_MODEL,
+      max_tokens: 16384,
+      system: PLAN_SYSTEM_PROMPT,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tools: [PLAN_TOOL as any],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      tool_choice: { type: "tool", name: "submit_training_plan" } as any,
+      messages: [
+        {
+          role: "user",
+          content: userText,
+        },
+      ],
+    });
+  } catch (err) {
+    // Anthropic API errors bubble up here — rate limit, invalid model,
+    // bad credentials, etc. Re-throw with the raw message so the UI
+    // can show something useful.
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[generatePlan] Anthropic API error:", message);
+    throw new Error(`AI coach is unavailable right now: ${message}`);
+  }
 
-  // Extract the tool_use block from the response.
-  const toolUse = response.content.find(
-    (
-      block,
-    ): block is Anthropic.ToolUseBlock =>
-      block.type === "tool_use" && block.name === "submit_training_plan",
-  );
-
-  if (!toolUse) {
+  // If Claude hit max_tokens mid-generation, the tool-use block is
+  // truncated and the parsed `input` will be incomplete or empty.
+  // Catch this case explicitly so the error tells the user why.
+  if (response.stop_reason === "max_tokens") {
+    console.error(
+      "[generatePlan] Response truncated. usage:",
+      response.usage,
+    );
     throw new Error(
-      "Claude did not call submit_training_plan — plan generation failed.",
+      "This plan was too long for me to finish in one go. Try a shorter race (e.g., 12-week half marathon instead of 20-week marathon) or a simpler methodology, and I'll try again.",
     );
   }
 
-  const plan = toolUse.input as GeneratedPlan;
+  // Find the tool_use block.
+  const toolUse = (
+    response.content as Array<{
+      type: string;
+      name?: string;
+      input?: unknown;
+      text?: string;
+    }>
+  ).find((block) => block.type === "tool_use" && block.name === "submit_training_plan");
 
-  // Light validation — the schema should handle most of this but we
-  // don't trust Claude to always get it perfect.
-  if (!plan.weeks || !Array.isArray(plan.weeks) || plan.weeks.length === 0) {
-    throw new Error("Generated plan has no weeks.");
+  if (!toolUse) {
+    // Claude replied with plain text instead of calling the tool —
+    // dump what it said for debugging and give the user a real reason.
+    const textBlock = (
+      response.content as Array<{ type: string; text?: string }>
+    ).find((block) => block.type === "text");
+    console.error(
+      "[generatePlan] No tool_use in response. stop_reason:",
+      response.stop_reason,
+      "text:",
+      textBlock?.text?.slice(0, 500),
+    );
+    throw new Error(
+      `The AI coach didn't return a structured plan. It said: "${(textBlock?.text ?? "(no text)").slice(0, 200)}"`,
+    );
   }
+
+  const plan = toolUse.input as Partial<GeneratedPlan> | undefined;
+
+  if (!plan || typeof plan !== "object") {
+    console.error("[generatePlan] Malformed tool input:", plan);
+    throw new Error(
+      "The AI coach returned an empty plan. Try again — this usually works on the retry.",
+    );
+  }
+
+  // Structural validation — the schema should handle most of this
+  // but Claude can still emit a short response if it ran out of
+  // room mid-weeks array. We catch those and tell the runner.
+  if (
+    !plan.weeks ||
+    !Array.isArray(plan.weeks) ||
+    plan.weeks.length === 0
+  ) {
+    console.error(
+      "[generatePlan] Plan has no weeks. Keys:",
+      Object.keys(plan ?? {}),
+      "stop_reason:",
+      response.stop_reason,
+    );
+    throw new Error(
+      "The AI coach started building your plan but ran out of room before finishing. Try a shorter timeframe or a simpler methodology, then regenerate.",
+    );
+  }
+
   for (const week of plan.weeks) {
     if (!week.workouts || week.workouts.length === 0) {
-      throw new Error(`Week ${week.week_number} has no workouts.`);
+      throw new Error(
+        `Week ${week.week_number} has no workouts — the coach didn't finish. Regenerate and it usually works.`,
+      );
     }
   }
 
-  return plan;
+  return plan as GeneratedPlan;
 }

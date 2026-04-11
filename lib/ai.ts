@@ -13,7 +13,7 @@ import type { Profile, TrainingPlan, TrainingPlanWorkout } from "@/lib/types";
  * pay for it once per conversation instead of every turn.
  */
 
-export const COACH_MODEL = "claude-sonnet-4-20250514";
+export const COACH_MODEL = "claude-sonnet-4-6";
 
 export function hasAnthropicKey(): boolean {
   return Boolean(process.env.ANTHROPIC_API_KEY);

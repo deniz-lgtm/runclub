@@ -63,6 +63,10 @@ export interface TrainingPlanWorkout {
   scheduled_time: string | null; // HH:MM
   location: string | null;
   is_completed: boolean;
+  actual_distance_miles: number | null;
+  actual_duration_minutes: number | null;
+  effort_rating: number | null;
+  notes: string | null;
 }
 
 export interface RunClub {

@@ -20,7 +20,7 @@ export default async function ClubEventDetailPage({
   const result = await getClubEventById(params.eventId);
   if (!result) notFound();
 
-  const { event, rsvps } = result as {
+  const { event, rsvps } = result as unknown as {
     event: {
       id: string;
       title: string;

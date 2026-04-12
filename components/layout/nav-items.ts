@@ -1,6 +1,5 @@
 import {
   Home,
-  Calendar,
   Map,
   Footprints,
   Users,
@@ -16,13 +15,16 @@ export interface NavItem {
 }
 
 /**
- * The six core tabs of Friends Who Run.
+ * The five core tabs of Friends Who Run.
  * Order matters — this is the order in both the mobile bottom nav and
  * the desktop sidebar.
+ *
+ * Calendar tab removed — its content has been redistributed:
+ *  - Friends' schedules → Feed tab (friends calendar feed)
+ *  - Today's workout + personal schedule → Train tab
  */
 export const NAV_ITEMS: NavItem[] = [
   { href: "/",         label: "Feed",     icon: Home,       emoji: "🏠" },
-  { href: "/calendar", label: "Calendar", icon: Calendar,   emoji: "📅" },
   { href: "/routes",   label: "Routes",   icon: Map,        emoji: "🗺️" },
   { href: "/train",    label: "Train",    icon: Footprints, emoji: "👟" },
   { href: "/clubs",    label: "Clubs",    icon: Users,      emoji: "🏃" },

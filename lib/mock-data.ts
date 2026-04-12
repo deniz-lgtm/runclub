@@ -168,6 +168,17 @@ function buildMockWorkouts(): TrainingPlanWorkout[] {
 
 export const MOCK_WORKOUTS: TrainingPlanWorkout[] = buildMockWorkouts();
 
+/** A single segment of a structured workout (warm up, interval, rest, cool down). */
+export interface WorkoutSegment {
+  type: "warmup" | "interval" | "rest" | "cooldown" | "steady" | "recovery";
+  label: string; // e.g. "Warm up", "800m repeat", "Float recovery"
+  distance?: string; // e.g. "2 mi", "800m", "400m"
+  duration?: string; // e.g. "10 min", "3:00"
+  pace?: string; // e.g. "8:30/mi", "5K pace", "conversational"
+  reps?: number; // e.g. 6 for 6×800m
+  notes?: string; // any additional info
+}
+
 /** A friend's scheduled run shown as a smaller indicator on the calendar. */
 export interface FriendRun {
   id: string;
@@ -180,6 +191,8 @@ export interface FriendRun {
   workout_type: WorkoutType;
   title: string;
   location: string;
+  description?: string; // brief summary
+  segments?: WorkoutSegment[]; // full structured breakdown
 }
 
 export const MOCK_FRIEND_RUNS: FriendRun[] = [
@@ -195,6 +208,10 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "easy",
     title: "Easy 3 mi shakeout",
     location: "Silver Lake Reservoir",
+    description: "Easy conversational pace to shake out the legs.",
+    segments: [
+      { type: "steady", label: "Easy run", distance: "3 mi", pace: "9:00–9:30/mi", notes: "Conversational effort" },
+    ],
   },
   // Tuesday — Coach Amy hosts track, Deanna joins
   {
@@ -208,6 +225,13 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "intervals",
     title: "Track Tuesday — 6×800m",
     location: "Santa Monica HS",
+    description: "Warm up 2mi, 6×800m at 5K pace with 400m jog recovery, cool down 1mi.",
+    segments: [
+      { type: "warmup", label: "Warm up", distance: "2 mi", pace: "9:00/mi", notes: "Easy with 4×strides at the end" },
+      { type: "interval", label: "800m repeats", distance: "800m", pace: "3:12–3:18 (5K pace)", reps: 6, notes: "Smooth and controlled, don't sprint" },
+      { type: "rest", label: "Recovery jog", distance: "400m", pace: "easy jog", notes: "Between each 800m repeat" },
+      { type: "cooldown", label: "Cool down", distance: "1 mi", pace: "9:30/mi", notes: "Easy jog to finish" },
+    ],
   },
   {
     id: "friend-run-3b",
@@ -220,6 +244,13 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "intervals",
     title: "Track workout — 4×800m",
     location: "Santa Monica HS",
+    description: "Warm up 1mi, 4×800m at 10K effort, 400m jog rest, cool down 1mi.",
+    segments: [
+      { type: "warmup", label: "Warm up", distance: "1 mi", pace: "9:30/mi", notes: "Easy jog + dynamic stretches" },
+      { type: "interval", label: "800m repeats", distance: "800m", pace: "3:35–3:45 (10K effort)", reps: 4, notes: "Even splits, stay relaxed" },
+      { type: "rest", label: "Jog recovery", distance: "400m", pace: "easy jog", notes: "Between each 800m" },
+      { type: "cooldown", label: "Cool down", distance: "1 mi", pace: "10:00/mi", notes: "Easy jog" },
+    ],
   },
   // Wednesday — Marcus easy run
   {
@@ -233,6 +264,10 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "easy",
     title: "Easy 4 mi",
     location: "Echo Park Lake loop",
+    description: "Recovery-effort miles, nice and easy.",
+    segments: [
+      { type: "steady", label: "Easy run", distance: "4 mi", pace: "9:00–9:30/mi", notes: "Keep it conversational" },
+    ],
   },
   // Thursday — Deanna tempo
   {
@@ -246,6 +281,12 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "tempo",
     title: "Tempo 5 mi",
     location: "Silver Lake loop",
+    description: "1mi warm up, 3mi at half marathon pace, 1mi cool down.",
+    segments: [
+      { type: "warmup", label: "Warm up", distance: "1 mi", pace: "9:15/mi", notes: "Easy effort, build into it" },
+      { type: "steady", label: "Tempo", distance: "3 mi", pace: "7:30–7:45/mi", notes: "Half marathon effort — comfortably hard" },
+      { type: "cooldown", label: "Cool down", distance: "1 mi", pace: "9:30/mi", notes: "Easy jog to finish" },
+    ],
   },
   // Saturday — the big social day: everyone does a long run
   {
@@ -259,6 +300,12 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "long_run",
     title: "Long run 8 mi",
     location: "Griffith Park",
+    description: "Steady long run, first 6 easy then last 2 at marathon pace.",
+    segments: [
+      { type: "warmup", label: "Easy start", distance: "1 mi", pace: "9:30/mi", notes: "Ease into the run" },
+      { type: "steady", label: "Steady miles", distance: "5 mi", pace: "8:45–9:00/mi", notes: "Aerobic effort, stay relaxed" },
+      { type: "steady", label: "Marathon pace finish", distance: "2 mi", pace: "8:00–8:15/mi", notes: "Close strong at goal MP" },
+    ],
   },
   {
     id: "friend-run-5",
@@ -271,6 +318,10 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "easy",
     title: "Social run 5 mi",
     location: "Griffith Park — join Deanna",
+    description: "Easy group run, no pace pressure.",
+    segments: [
+      { type: "steady", label: "Group run", distance: "5 mi", pace: "9:00–9:30/mi", notes: "Social pace, keep it fun" },
+    ],
   },
   {
     id: "friend-run-6",
@@ -283,6 +334,13 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "long_run",
     title: "Long run 12 mi + strides",
     location: "Griffith Park → Los Feliz",
+    description: "Progressive long run: easy 8, steady 3, 6×100m strides to finish.",
+    segments: [
+      { type: "warmup", label: "Easy miles", distance: "8 mi", pace: "8:30–8:45/mi", notes: "Aerobic base, patient start" },
+      { type: "steady", label: "Steady progression", distance: "3 mi", pace: "7:45–8:00/mi", notes: "Marathon effort, gradually pick up" },
+      { type: "interval", label: "Strides", distance: "100m", pace: "fast & relaxed", reps: 6, notes: "Smooth acceleration, full recovery between" },
+      { type: "cooldown", label: "Cool down jog", distance: "1 mi", pace: "9:30/mi", notes: "Shake it out" },
+    ],
   },
   // Sunday — Deanna recovery
   {
@@ -296,6 +354,10 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     workout_type: "recovery",
     title: "Recovery 3 mi",
     location: "Echo Park",
+    description: "Super easy recovery jog, keep heart rate low.",
+    segments: [
+      { type: "recovery", label: "Recovery jog", distance: "3 mi", pace: "10:00–10:30/mi", notes: "Zone 1 effort, walk breaks are fine" },
+    ],
   },
 ];
 

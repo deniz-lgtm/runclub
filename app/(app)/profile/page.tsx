@@ -1,87 +1,62 @@
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { ProfileSummary } from "@/components/profile/profile-summary";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { RaceLog } from "@/components/profile/race-log";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { requireProfile } from "@/lib/auth";
 import { signOut } from "@/app/(auth)/login/actions";
+import { getMyRaceResults } from "@/app/(app)/profile/race-actions";
 
-/**
- * Your own profile page.
- *
- * Requires a completed profile — `requireProfile()` will redirect to
- * /login if unauth or /onboarding if the profile row is missing.
- */
 export default async function ProfilePage() {
   const profile = await requireProfile();
+  const races = await getMyRaceResults();
 
   return (
     <>
-      <PageHeader title="Profile" />
+      <PageHeader
+        eyebrow="Profile"
+        title={profile.display_name ?? profile.username}
+      />
 
-      <div className="w-full px-4 space-y-4">
+      <div className="column space-y-4">
         <ProfileSummary profile={profile} />
 
-        {/* Connected apps */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Connected apps</CardTitle>
-            <CardDescription>
-              Sync Strava, TrainingPeaks, and Final Surge to bring your runs
-              and training plans into FWR.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <ConnectionRow
-              name="Strava"
-              note="Activities, routes, and maps"
-            />
-            <ConnectionRow
-              name="TrainingPeaks"
-              note="Coach-built training plan"
-            />
-            <ConnectionRow
-              name="Final Surge"
-              note="Coach-built training plan"
-            />
-          </CardContent>
-        </Card>
+        {/* Race results */}
+        <RaceLog races={races} />
 
-        {/* Settings + sign out */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <Button variant="outline" asChild>
-              <Link href="/profile/settings">Account settings</Link>
+        {/* Connected apps */}
+        <div className="rounded-sm border border-ink/15 bg-surface p-4">
+          <div className="label-bib mb-3">Connected apps</div>
+          <div className="flex flex-col gap-2">
+            <ConnectionRow name="Strava" note="Activities, routes, maps" />
+            <ConnectionRow name="TrainingPeaks" note="Coach-built plan" />
+            <ConnectionRow name="Final Surge" note="Coach-built plan" />
+          </div>
+          <Button variant="outline" size="sm" className="mt-3 w-full" asChild>
+            <Link href="/profile/settings/connections">Manage</Link>
+          </Button>
+        </div>
+
+        {/* Settings */}
+        <div className="flex flex-col gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/profile/settings">Account settings</Link>
+          </Button>
+          <Button variant="outline" asChild>
+            <Link href="/friends">Friends</Link>
+          </Button>
+          <form action={signOut}>
+            <Button
+              variant="ghost"
+              type="submit"
+              className="w-full text-siren hover:bg-siren/5 hover:text-siren"
+            >
+              Sign out
             </Button>
-            <Button variant="outline" asChild>
-              <Link href="/profile/settings/connections">
-                Manage connections
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link href="/friends">Friends</Link>
-            </Button>
-            <form action={signOut}>
-              <Button
-                variant="ghost"
-                type="submit"
-                className="w-full text-destructive hover:bg-destructive/5 hover:text-destructive"
-              >
-                Sign out
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+          </form>
+        </div>
       </div>
     </>
   );
@@ -89,10 +64,14 @@ export default async function ProfilePage() {
 
 function ConnectionRow({ name, note }: { name: string; note: string }) {
   return (
-    <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+    <div className="flex items-center justify-between rounded-xs border border-ink/10 bg-bone-soft/50 px-3 py-2.5">
       <div className="min-w-0">
-        <div className="text-sm font-semibold">{name}</div>
-        <div className="truncate text-xs text-muted-foreground">{note}</div>
+        <div className="font-display text-xs font-extrabold text-ink">
+          {name}
+        </div>
+        <div className="truncate font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+          {note}
+        </div>
       </div>
       <Badge variant="muted">Not connected</Badge>
     </div>

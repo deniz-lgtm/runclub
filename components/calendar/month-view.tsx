@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   formatWeekdayShort,
@@ -15,11 +16,9 @@ import type { ClubEvent, FriendRun } from "@/lib/mock-data";
 interface MonthViewProps {
   month: Date;
   today: Date;
-  selectedDate: Date;
   workouts: TrainingPlanWorkout[];
   friendRuns: FriendRun[];
   clubEvents: ClubEvent[];
-  onSelectDate: (date: Date) => void;
 }
 
 /**
@@ -30,11 +29,9 @@ interface MonthViewProps {
 export function MonthView({
   month,
   today,
-  selectedDate,
   workouts,
   friendRuns,
   clubEvents,
-  onSelectDate,
 }: MonthViewProps) {
   const grid = useMemo(() => getMonthGrid(month), [month]);
 
@@ -91,7 +88,6 @@ export function MonthView({
           const entry = lookup.get(iso);
           const inMonth = day.getMonth() === monthIndex;
           const isToday = isSameDay(day, today);
-          const isSelected = isSameDay(day, selectedDate);
           const style = entry?.workout
             ? styleForWorkout(entry.workout.workout_type)
             : null;
@@ -99,16 +95,14 @@ export function MonthView({
           const lastRow = idx >= 35;
 
           return (
-            <button
+            <Link
               key={iso}
-              type="button"
-              onClick={() => onSelectDate(day)}
+              href={`/calendar/${iso}`}
               className={cn(
-                "relative flex aspect-square flex-col items-start p-1.5 text-left transition-colors",
+                "relative flex aspect-square flex-col items-start p-1.5 text-left transition-colors hover:bg-ink/[0.04]",
                 !rowEnd && "border-r border-ink/10",
                 !lastRow && "border-b border-ink/10",
                 inMonth ? "bg-surface" : "bg-bone-soft/50",
-                isSelected && "bg-ink/[0.04] ring-1 ring-inset ring-ink",
               )}
             >
               {/* Date number */}
@@ -142,7 +136,7 @@ export function MonthView({
                   )}
                 </div>
               )}
-            </button>
+            </Link>
           );
         })}
       </div>

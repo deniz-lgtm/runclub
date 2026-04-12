@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import {
   addDays,
@@ -16,11 +17,9 @@ import type { ClubEvent, FriendRun } from "@/lib/mock-data";
 interface WeekViewProps {
   weekStart: Date;
   today: Date;
-  selectedDate: Date;
   workouts: TrainingPlanWorkout[];
   friendRuns: FriendRun[];
   clubEvents: ClubEvent[];
-  onSelectDate: (date: Date) => void;
 }
 
 /**
@@ -33,11 +32,9 @@ interface WeekViewProps {
 export function WeekView({
   weekStart,
   today,
-  selectedDate,
   workouts,
   friendRuns,
   clubEvents,
-  onSelectDate,
 }: WeekViewProps) {
   const lookup = useMemo(() => {
     const byDate = new Map<
@@ -74,21 +71,18 @@ export function WeekView({
         const iso = toISODate(day);
         const entry = lookup.get(iso)!;
         const isToday = isSameDay(day, today);
-        const isSelected = isSameDay(day, selectedDate);
         const style = entry.workout
           ? styleForWorkout(entry.workout.workout_type)
           : null;
         const isLast = idx === days.length - 1;
 
         return (
-          <button
+          <Link
             key={iso}
-            type="button"
-            onClick={() => onSelectDate(day)}
+            href={`/calendar/${iso}`}
             className={cn(
-              "relative flex w-full items-center gap-3 px-3 py-3 text-left transition-colors",
+              "relative flex w-full items-center gap-3 px-3 py-3 text-left transition-colors hover:bg-ink/[0.03]",
               !isLast && "border-b border-ink/10",
-              isSelected && "bg-ink/[0.03]",
             )}
           >
             {/* Left accent bar in workout color */}
@@ -124,6 +118,9 @@ export function WeekView({
             <div className="min-w-0 flex-1">
               {entry.workout ? (
                 <>
+                  <div className="mb-0.5 font-mono text-[8px] font-bold uppercase tracking-bib text-flash">
+                    Your workout
+                  </div>
                   <div
                     className={cn(
                       "truncate font-display text-sm font-extrabold tracking-tight text-ink",
@@ -202,7 +199,7 @@ export function WeekView({
                 DONE
               </span>
             )}
-          </button>
+          </Link>
         );
       })}
     </div>

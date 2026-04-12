@@ -7,7 +7,7 @@ import { WeekSummary } from "./week-summary";
 import { CrewThisWeek } from "./crew-this-week";
 import { WeekView, weekRange } from "./week-view";
 import { MonthView } from "./month-view";
-import { DayDetail } from "./day-detail";
+// DayDetail now lives at /calendar/[date] as a dedicated page.
 import {
   addDays,
   formatMonth,
@@ -37,7 +37,6 @@ export function CalendarView({
   const today = useMemo(() => startOfDay(new Date()), []);
   const [mode, setMode] = useState<ViewMode>("week");
   const [cursor, setCursor] = useState<Date>(today);
-  const [selectedDate, setSelectedDate] = useState<Date>(today);
 
   const weekWorkouts = useMemo(() => {
     const start = startOfWeek(cursor);
@@ -60,18 +59,11 @@ export function CalendarView({
     return workouts.find((w) => w.scheduled_date === iso) ?? null;
   }, [today, workouts]);
 
-  // Friends running today — shown on the hero card.
   const todayIso = toISODate(today);
   const friendRunsToday = useMemo(
     () => friendRuns.filter((r) => r.date === todayIso),
     [friendRuns, todayIso],
   );
-
-  const selectedIso = toISODate(selectedDate);
-  const selectedWorkout =
-    workouts.find((w) => w.scheduled_date === selectedIso) ?? null;
-  const selectedFriendRuns = friendRuns.filter((r) => r.date === selectedIso);
-  const selectedClubEvents = clubEvents.filter((e) => e.date === selectedIso);
 
   function navigatePrev() {
     setCursor((prev) => addDays(prev, mode === "week" ? -7 : -30));
@@ -81,7 +73,6 @@ export function CalendarView({
   }
   function navigateToday() {
     setCursor(today);
-    setSelectedDate(today);
   }
 
   const headerLabel =
@@ -90,7 +81,7 @@ export function CalendarView({
   return (
     <div className="flex flex-col gap-4 px-4">
       {/* Today card */}
-      {isSameDay(selectedDate, today) || isCursorInCurrentWeek(cursor, today) ? (
+      {isCursorInCurrentWeek(cursor, today) ? (
         <TodayCard
           date={today}
           workout={todaysWorkout}
@@ -155,36 +146,24 @@ export function CalendarView({
         <div className="h-px flex-1 bg-ink/20" aria-hidden />
       </div>
 
-      {/* Grid */}
+      {/* Grid — tapping a day navigates to /calendar/[date] */}
       {mode === "week" ? (
         <WeekView
           weekStart={startOfWeek(cursor)}
           today={today}
-          selectedDate={selectedDate}
           workouts={workouts}
           friendRuns={friendRuns}
           clubEvents={clubEvents}
-          onSelectDate={setSelectedDate}
         />
       ) : (
         <MonthView
           month={cursor}
           today={today}
-          selectedDate={selectedDate}
           workouts={workouts}
           friendRuns={friendRuns}
           clubEvents={clubEvents}
-          onSelectDate={setSelectedDate}
         />
       )}
-
-      {/* Day detail */}
-      <DayDetail
-        date={selectedDate}
-        workout={selectedWorkout}
-        friendRuns={selectedFriendRuns}
-        clubEvents={selectedClubEvents}
-      />
     </div>
   );
 }

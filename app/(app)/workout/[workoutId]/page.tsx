@@ -11,7 +11,7 @@ import { getWorkoutById } from "@/lib/queries/plans";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { requireProfile } from "@/lib/auth";
 import { formatLongDate, fromISODate } from "@/lib/date-utils";
-import { ChevronLeft, Clock, MapPin } from "lucide-react";
+import { ChevronLeft, Clock, MapPin, Play } from "lucide-react";
 
 /**
  * Workout detail page.
@@ -113,6 +113,15 @@ export default async function WorkoutDetailPage({
             </p>
           )}
         </div>
+
+        {/* Start Run — only for the owner, non-rest, not yet completed */}
+        {isOwner && workout.workout_type !== "rest" && !workout.is_completed && (
+          <Button variant="flash" size="lg" className="w-full" asChild>
+            <Link href={`/workout/${workout.id}/start-run`}>
+              <Play className="h-4 w-4" /> Start run
+            </Link>
+          </Button>
+        )}
 
         {/* Actual (if completed) */}
         {workout.is_completed && workout.actual_distance_miles != null && (

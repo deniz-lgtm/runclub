@@ -12,7 +12,7 @@ import {
 } from "@/lib/ai-plan";
 import { canGenerateNewPlan, recordGeneration } from "@/lib/queries/ai-plans";
 import type { PlanVisibility, WorkoutType } from "@/lib/types";
-import { addDays, startOfWeek, toISODate } from "@/lib/date-utils";
+import { addDays, fromISODate, startOfWeek, toISODate } from "@/lib/date-utils";
 
 // ────────────────────────────────────────────────────────────────────────────
 // Generate: form input → Claude → GeneratedPlan (not yet persisted)
@@ -22,6 +22,7 @@ export interface GenerateResult {
   ok?: boolean;
   plan?: GeneratedPlan;
   input?: PlanInput; // echoed back so the accept step has it
+  startDate?: string; // computed plan start date (ISO)
   error?: string;
   remaining?: number;
 }
@@ -59,10 +60,16 @@ export async function generateTrainingPlan(
       total_weeks: plan.total_weeks,
     });
 
+    // Compute the actual start date so the preview can show it.
+    const raceDateObj = fromISODate(input.goal_race_date);
+    const raceWeekMon = startOfWeek(raceDateObj);
+    const planStartMon = addDays(raceWeekMon, -(plan.total_weeks - 1) * 7);
+
     return {
       ok: true,
       plan,
       input,
+      startDate: toISODate(planStartMon),
       remaining: rate.remaining - 1,
     };
   } catch (err) {
@@ -111,10 +118,16 @@ export async function acceptGeneratedPlan(args: {
   if (planErr) return { error: planErr.message };
   const planId = (planRow as { id: string }).id;
 
-  // Build all the workout rows. Week 1 starts on the upcoming Monday
-  // (or this Monday if today is Monday). Each week's workouts are
-  // laid out Mon→Sun by their day_offset (0-6).
-  const todayMonday = startOfWeek(new Date());
+  // Build all the workout rows. Dates are computed BACKWARDS from
+  // race day — exactly like a real coach does. Race week is the last
+  // week; we subtract (total_weeks - 1) * 7 to find week 1's Monday.
+  const raceDateObj = fromISODate(args.input.goal_race_date);
+  const raceWeekMonday = startOfWeek(raceDateObj);
+  const planStartMonday = addDays(
+    raceWeekMonday,
+    -(args.plan.total_weeks - 1) * 7,
+  );
+
   const workoutRows: Array<{
     plan_id: string;
     scheduled_date: string;
@@ -126,7 +139,7 @@ export async function acceptGeneratedPlan(args: {
   }> = [];
 
   for (const week of args.plan.weeks) {
-    const weekStart = addDays(todayMonday, (week.week_number - 1) * 7);
+    const weekStart = addDays(planStartMonday, (week.week_number - 1) * 7);
     for (const w of week.workouts) {
       const date = addDays(weekStart, w.day_offset);
       workoutRows.push({

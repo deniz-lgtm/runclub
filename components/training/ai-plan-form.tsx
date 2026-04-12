@@ -79,6 +79,7 @@ export function AiPlanForm({ initialRemaining, limit }: AiPlanFormProps) {
       <GeneratedPlanPreview
         plan={result.plan}
         input={result.input}
+        startDate={result.startDate ?? null}
         onRegenerate={handleRegenerate}
         remaining={remaining}
         limit={limit}

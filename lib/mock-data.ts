@@ -155,6 +155,10 @@ function buildMockWorkouts(): TrainingPlanWorkout[] {
         scheduled_time: seed.time ?? null,
         location: seed.location ?? null,
         is_completed: completed,
+        actual_distance_miles: null,
+        actual_duration_minutes: null,
+        effort_rating: null,
+        notes: null,
       });
     }
   }

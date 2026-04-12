@@ -14,6 +14,7 @@ import { ChevronDown, ChevronUp, Loader2, Sparkles } from "lucide-react";
 interface GeneratedPlanPreviewProps {
   plan: GeneratedPlan;
   input: PlanInput;
+  startDate: string | null; // computed plan start (ISO), null if unavailable
   onRegenerate: () => void;
   remaining: number;
   limit: number;
@@ -35,6 +36,7 @@ interface GeneratedPlanPreviewProps {
 export function GeneratedPlanPreview({
   plan,
   input,
+  startDate,
   onRegenerate,
   remaining,
   limit,
@@ -75,8 +77,23 @@ export function GeneratedPlanPreview({
             {plan.summary}
           </p>
 
+          {/* Start → Race date strip */}
+          <div className="mt-4 flex items-center gap-2 border-t border-white/10 pt-3 font-mono text-[10px] font-bold uppercase tracking-bib">
+            <span className="text-flash">
+              {startDate ? formatPreviewDate(startDate) : "TBD"}
+            </span>
+            <span className="text-white/30">→</span>
+            <span className="text-white">
+              {formatPreviewDate(input.goal_race_date)}
+            </span>
+            <span className="text-white/30">·</span>
+            <span className="text-white/60">
+              {plan.total_weeks} weeks
+            </span>
+          </div>
+
           {/* Big stats */}
-          <div className="mt-4 grid grid-cols-4 gap-3 border-t border-white/10 pt-3">
+          <div className="mt-3 grid grid-cols-4 gap-3 border-t border-white/10 pt-3">
             <Stat label="Weeks" value={String(plan.total_weeks)} />
             <Stat label="Sessions" value={String(totalWorkouts)} />
             <Stat
@@ -287,6 +304,15 @@ function Stat({
       </div>
     </div>
   );
+}
+
+function formatPreviewDate(iso: string): string {
+  const [y, m, d] = iso.split("-").map(Number);
+  return new Date(y, (m ?? 1) - 1, d ?? 1).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
 }
 
 function PhaseBadge({ phase }: { phase: string }) {

@@ -122,6 +122,8 @@ Pace style instructions will be provided in the context. Follow them:
 - "specific": use concrete pace ranges ("7:45-8:00/mi", derived from the runner's goal time or recent race)
 - "both": include words first, specific pace as a secondary line ("Conversational — 8:30-9:00/mi")
 
+For rest days, keep it short: title "Rest", description "No activity. Recover." — don't waste space on rest-day paragraphs.
+
 Call the submit_training_plan tool exactly once with your structured plan. Do not reply in free-form text — the tool call IS your response.`;
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -364,7 +366,7 @@ export async function generatePlan(input: PlanInput): Promise<GeneratedPlan> {
   try {
     response = await client.messages.create({
       model: PLAN_MODEL,
-      max_tokens: 16384,
+      max_tokens: 64000,
       system: PLAN_SYSTEM_PROMPT,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       tools: [PLAN_TOOL as any],

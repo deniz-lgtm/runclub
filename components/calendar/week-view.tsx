@@ -118,8 +118,9 @@ export function WeekView({
             <div className="min-w-0 flex-1">
               {entry.workout ? (
                 <>
+                  {/* Section heading for your own run */}
                   <div className="mb-0.5 font-mono text-[8px] font-bold uppercase tracking-bib text-flash">
-                    Your workout
+                    Your run
                   </div>
                   <div
                     className={cn(
@@ -157,9 +158,13 @@ export function WeekView({
                 </div>
               )}
 
-              {(entry.friends.length > 0 || entry.events.length > 0) && (
-                <div className="mt-1.5 flex flex-col gap-1">
-                  {entry.friends.map((f) => (
+              {entry.friends.length > 0 && (
+                <div className="mt-2 border-t border-ink/10 pt-1.5">
+                  <div className="mb-1 font-mono text-[8px] font-bold uppercase tracking-bib text-ink-muted">
+                    Crew · {entry.friends.length} run{entry.friends.length === 1 ? "" : "s"}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    {entry.friends.map((f) => (
                     <div
                       key={f.id}
                       className="flex items-center gap-1.5 rounded-xs bg-ink/[0.04] px-1.5 py-1"
@@ -177,13 +182,15 @@ export function WeekView({
                       </span>
                     </div>
                   ))}
-                  {entry.events.length > 0 && (
-                    <div className="flex items-center gap-1.5 rounded-xs bg-flash/10 px-1.5 py-1">
-                      <span className="font-mono text-[9px] font-bold uppercase tracking-bib text-flash">
-                        CLUB · {entry.events[0].title}
-                      </span>
-                    </div>
-                  )}
+                  </div>
+                </div>
+              )}
+
+              {entry.events.length > 0 && (
+                <div className="mt-1.5 flex items-center gap-1.5 rounded-xs bg-flash/10 px-1.5 py-1">
+                  <span className="font-mono text-[9px] font-bold uppercase tracking-bib text-flash">
+                    Club · {entry.events[0].title}
+                  </span>
                 </div>
               )}
             </div>

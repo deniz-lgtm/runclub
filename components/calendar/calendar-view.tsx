@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { TodayCard } from "./today-card";
 import { WeekSummary } from "./week-summary";
+import { CrewThisWeek } from "./crew-this-week";
 import { WeekView, weekRange } from "./week-view";
 import { MonthView } from "./month-view";
 import { DayDetail } from "./day-detail";
@@ -59,6 +60,13 @@ export function CalendarView({
     return workouts.find((w) => w.scheduled_date === iso) ?? null;
   }, [today, workouts]);
 
+  // Friends running today — shown on the hero card.
+  const todayIso = toISODate(today);
+  const friendRunsToday = useMemo(
+    () => friendRuns.filter((r) => r.date === todayIso),
+    [friendRuns, todayIso],
+  );
+
   const selectedIso = toISODate(selectedDate);
   const selectedWorkout =
     workouts.find((w) => w.scheduled_date === selectedIso) ?? null;
@@ -83,11 +91,18 @@ export function CalendarView({
     <div className="flex flex-col gap-4 px-4">
       {/* Today card */}
       {isSameDay(selectedDate, today) || isCursorInCurrentWeek(cursor, today) ? (
-        <TodayCard date={today} workout={todaysWorkout} />
+        <TodayCard
+          date={today}
+          workout={todaysWorkout}
+          friendRunsToday={friendRunsToday}
+        />
       ) : null}
 
       {/* This Week summary */}
       <WeekSummary workouts={weekWorkouts} friendRuns={weekFriendRuns} />
+
+      {/* Crew this week — the social heart */}
+      <CrewThisWeek friendRuns={weekFriendRuns} />
 
       {/* View toggle + navigation */}
       <div className="flex items-center justify-between">

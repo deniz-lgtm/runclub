@@ -1,23 +1,28 @@
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { WorkoutChip } from "./workout-chip";
 import { styleForWorkout } from "@/lib/workout-colors";
 import { formatLongDate } from "@/lib/date-utils";
+import { initials } from "@/lib/utils";
 import type { TrainingPlanWorkout } from "@/lib/types";
-import { Clock, MapPin } from "lucide-react";
+import type { FriendRun } from "@/lib/mock-data";
+import { Clock, MapPin, Users } from "lucide-react";
 
 /**
- * "Today" card — the most-looked-at element in the app. Editorial
- * treatment: all-caps eyebrow label, huge display title, mono data
- * row, stark ink-on-bone composition.
+ * "Today" card — the most-looked-at element in the app.
  *
- * Rest day gets a quieter variant.
+ * Now includes a "CREW TODAY" section showing which friends are
+ * running today with their workout, time, and location + a Join
+ * button. This is what makes someone open the app every morning.
  */
 export function TodayCard({
   date,
   workout,
+  friendRunsToday = [],
 }: {
   date: Date;
   workout: TrainingPlanWorkout | null;
+  friendRunsToday?: FriendRun[];
 }) {
   // Rest day fallback.
   if (!workout || workout.workout_type === "rest") {
@@ -32,6 +37,11 @@ export function TodayCard({
         <p className="mt-2 text-sm text-ink-muted">
           Hydrate. Roll out. Sleep in. Recovery is training.
         </p>
+
+        {/* Even on rest days, show if friends are running */}
+        {friendRunsToday.length > 0 && (
+          <CrewTodaySection friends={friendRunsToday} />
+        )}
       </div>
     );
   }
@@ -48,7 +58,7 @@ export function TodayCard({
       />
 
       <div className="p-5">
-        {/* Eyebrow row: date + bib index + workout type chip */}
+        {/* Eyebrow row */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-xs border border-white/30 bg-transparent px-1 font-mono text-[10px] font-bold tabular-nums text-white">
@@ -105,6 +115,85 @@ export function TodayCard({
             Find a route
           </Button>
         </div>
+
+        {/* CREW TODAY — friends running today, right on the hero card */}
+        {friendRunsToday.length > 0 && (
+          <div className="mt-4 border-t border-white/10 pt-4">
+            <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-bib text-flash">
+              <Users className="h-3 w-3" />
+              Crew today · {friendRunsToday.length} running
+            </div>
+            <div className="mt-2 flex flex-col gap-1.5">
+              {friendRunsToday.map((run) => (
+                <div
+                  key={run.id}
+                  className="flex items-center gap-2.5 rounded-xs bg-white/10 p-2"
+                >
+                  <Avatar className="h-7 w-7 shrink-0 rounded-xs">
+                    <AvatarFallback className="rounded-xs bg-white/20 font-mono text-[9px] font-bold text-white">
+                      {initials(run.friend_name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-bold text-white">
+                      {run.friend_name}
+                    </div>
+                    <div className="truncate font-mono text-[9px] font-bold uppercase tracking-bib text-white/50">
+                      {run.title} · {formatTime(run.time)} · {run.location}
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="shrink-0 border-white/40 text-white hover:bg-white hover:text-ink"
+                  >
+                    Join
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Crew section for rest-day or no-workout TodayCards.
+ * Same content, but on the bone (light) background.
+ */
+function CrewTodaySection({ friends }: { friends: FriendRun[] }) {
+  return (
+    <div className="mt-4 border-t border-ink/10 pt-4">
+      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-bib text-flash">
+        <Users className="h-3 w-3" />
+        Crew today · {friends.length} running
+      </div>
+      <div className="mt-2 flex flex-col gap-1.5">
+        {friends.map((run) => (
+          <div
+            key={run.id}
+            className="flex items-center gap-2.5 rounded-xs border border-ink/10 bg-surface p-2"
+          >
+            <Avatar className="h-7 w-7 shrink-0 rounded-xs">
+              <AvatarFallback className="rounded-xs bg-ink/10 font-mono text-[9px] font-bold text-ink">
+                {initials(run.friend_name)}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-xs font-bold text-ink">
+                {run.friend_name}
+              </div>
+              <div className="truncate font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+                {run.title} · {formatTime(run.time)}
+              </div>
+            </div>
+            <Button variant="flash" size="sm" className="shrink-0">
+              Join
+            </Button>
+          </div>
+        ))}
       </div>
     </div>
   );

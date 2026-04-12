@@ -179,6 +179,45 @@ export interface FriendRun {
 }
 
 export const MOCK_FRIEND_RUNS: FriendRun[] = [
+  // Monday — Marcus does an easy morning run
+  {
+    id: "friend-run-0",
+    friend_id: "22222222-2222-2222-2222-222222222222",
+    friend_name: "Marcus J.",
+    friend_username: "marcusj",
+    date: toISODate(addDays(mondayThisWeek, 0)),
+    time: "07:00",
+    distance: 3,
+    workout_type: "easy",
+    title: "Easy 3 mi shakeout",
+    location: "Silver Lake Reservoir",
+  },
+  // Tuesday — Coach Amy hosts track, Deanna joins
+  {
+    id: "friend-run-3",
+    friend_id: "33333333-3333-3333-3333-333333333333",
+    friend_name: "Coach Amy",
+    friend_username: "coachamy",
+    date: toISODate(addDays(mondayThisWeek, 1)),
+    time: "18:00",
+    distance: 7,
+    workout_type: "intervals",
+    title: "Track Tuesday — 6×800m",
+    location: "Santa Monica HS",
+  },
+  {
+    id: "friend-run-3b",
+    friend_id: "44444444-4444-4444-4444-444444444444",
+    friend_name: "Deanna",
+    friend_username: "deanna",
+    date: toISODate(addDays(mondayThisWeek, 1)),
+    time: "18:00",
+    distance: 5,
+    workout_type: "intervals",
+    title: "Track workout — 4×800m",
+    location: "Santa Monica HS",
+  },
+  // Wednesday — Marcus easy run
   {
     id: "friend-run-1",
     friend_id: "22222222-2222-2222-2222-222222222222",
@@ -191,6 +230,20 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     title: "Easy 4 mi",
     location: "Echo Park Lake loop",
   },
+  // Thursday — Deanna tempo
+  {
+    id: "friend-run-4",
+    friend_id: "44444444-4444-4444-4444-444444444444",
+    friend_name: "Deanna",
+    friend_username: "deanna",
+    date: toISODate(addDays(mondayThisWeek, 3)),
+    time: "06:30",
+    distance: 5,
+    workout_type: "tempo",
+    title: "Tempo 5 mi",
+    location: "Silver Lake loop",
+  },
+  // Saturday — the big social day: everyone does a long run
   {
     id: "friend-run-2",
     friend_id: "44444444-4444-4444-4444-444444444444",
@@ -204,16 +257,41 @@ export const MOCK_FRIEND_RUNS: FriendRun[] = [
     location: "Griffith Park",
   },
   {
-    id: "friend-run-3",
+    id: "friend-run-5",
+    friend_id: "22222222-2222-2222-2222-222222222222",
+    friend_name: "Marcus J.",
+    friend_username: "marcusj",
+    date: toISODate(addDays(mondayThisWeek, 5)),
+    time: "07:30",
+    distance: 5,
+    workout_type: "easy",
+    title: "Social run 5 mi",
+    location: "Griffith Park — join Deanna",
+  },
+  {
+    id: "friend-run-6",
     friend_id: "33333333-3333-3333-3333-333333333333",
     friend_name: "Coach Amy",
     friend_username: "coachamy",
-    date: toISODate(addDays(mondayThisWeek, 1)),
-    time: "18:00",
-    distance: 7,
-    workout_type: "intervals",
-    title: "Track Tuesday — 6×800m",
-    location: "Santa Monica HS",
+    date: toISODate(addDays(mondayThisWeek, 5)),
+    time: "06:30",
+    distance: 12,
+    workout_type: "long_run",
+    title: "Long run 12 mi + strides",
+    location: "Griffith Park → Los Feliz",
+  },
+  // Sunday — Deanna recovery
+  {
+    id: "friend-run-7",
+    friend_id: "44444444-4444-4444-4444-444444444444",
+    friend_name: "Deanna",
+    friend_username: "deanna",
+    date: toISODate(addDays(mondayThisWeek, 6)),
+    time: "09:00",
+    distance: 3,
+    workout_type: "recovery",
+    title: "Recovery 3 mi",
+    location: "Echo Park",
   },
 ];
 

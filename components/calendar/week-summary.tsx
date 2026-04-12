@@ -25,6 +25,11 @@ export function WeekSummary({
   const pct =
     plannedMiles > 0 ? Math.min(100, (completedMiles / plannedMiles) * 100) : 0;
 
+  // Unique friend names for the "who's running" strip.
+  const uniqueFriends = Array.from(
+    new Set(friendRuns.map((r) => r.friend_name)),
+  );
+
   return (
     <div className="rounded-sm border border-ink/10 bg-surface p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -38,8 +43,27 @@ export function WeekSummary({
       <div className="grid grid-cols-3 gap-2 border-t border-ink/10 pt-3">
         <Stat label="Planned" value={`${plannedMiles.toFixed(0)}`} unit="MI" />
         <Stat label="Left" value={String(runsRemaining)} />
-        <Stat label="Crew" value={String(friendRuns.length)} />
+        <Stat label="Crew" value={String(uniqueFriends.length)} />
       </div>
+
+      {/* Friend names */}
+      {uniqueFriends.length > 0 && (
+        <div className="mt-3 border-t border-ink/10 pt-3">
+          <div className="flex flex-wrap gap-1.5">
+            {uniqueFriends.map((name) => (
+              <span
+                key={name}
+                className="inline-flex items-center rounded-xs border border-ink/15 bg-bone-soft px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-bib text-ink"
+              >
+                {name.split(" ")[0]}
+              </span>
+            ))}
+            <span className="font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
+              running this week
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Progress bar — track + fill */}
       <div className="mt-3 h-1 w-full overflow-hidden bg-ink/10">

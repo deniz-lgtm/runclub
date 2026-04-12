@@ -22,12 +22,23 @@ export default function manifest(): MetadataRoute.Manifest {
     orientation: "portrait",
     categories: ["fitness", "sports", "social"],
     icons: [
-      // Placeholders — replace with real PNG icons in /public/icons/
       {
         src: "/icon.svg",
         sizes: "any",
         type: "image/svg+xml",
         purpose: "any",
+      },
+      {
+        src: "/api/icon?size=192",
+        sizes: "192x192",
+        type: "image/png",
+        purpose: "any",
+      },
+      {
+        src: "/api/icon?size=512",
+        sizes: "512x512",
+        type: "image/png",
+        purpose: "maskable",
       },
     ],
   };

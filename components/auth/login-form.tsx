@@ -1,60 +1,43 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   signInWithGoogle,
-  signInWithMagicLink,
+  signInWithPassword,
 } from "@/app/(auth)/login/actions";
 
 /**
- * Login form — editorial treatment with sharper inputs, ink buttons,
- * and mono "magic link sent" confirmation.
+ * Login form — editorial treatment with sharper inputs and ink buttons.
+ * Signs in with email + password via Supabase Auth.
  */
 export function LoginForm() {
+  const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [state, setState] = useState<
-    | { kind: "idle" }
-    | { kind: "sent"; email: string }
-    | { kind: "error"; message: string }
-  >({ kind: "idle" });
+  const [error, setError] = useState<string | null>(null);
 
-  function handleMagicLink(formData: FormData) {
-    const email = String(formData.get("email") ?? "");
+  function handleSignIn(formData: FormData) {
+    setError(null);
     startTransition(async () => {
-      const result = await signInWithMagicLink(formData);
+      const result = await signInWithPassword(formData);
       if (result?.error) {
-        setState({ kind: "error", message: result.error });
-      } else {
-        setState({ kind: "sent", email });
+        setError(result.error);
+        return;
       }
+      router.push("/");
+      router.refresh();
     });
   }
 
   function handleGoogle() {
+    setError(null);
     startTransition(async () => {
       const result = await signInWithGoogle();
       if (result?.error) {
-        setState({ kind: "error", message: result.error });
+        setError(result.error);
       }
     });
-  }
-
-  if (state.kind === "sent") {
-    return (
-      <div className="rounded-xs border border-flash bg-flash/10 p-4">
-        <div className="label-bib text-flash">Check your inbox</div>
-        <p className="mt-2 font-display text-base font-extrabold leading-tight tracking-tight text-ink">
-          Magic link sent
-        </p>
-        <p className="mt-1 font-mono text-[10px] text-ink-muted">
-          {state.email}
-        </p>
-        <p className="mt-3 text-xs leading-snug text-ink-muted">
-          Click the link in the email to sign in — no password required.
-        </p>
-      </div>
-    );
   }
 
   return (
@@ -79,7 +62,7 @@ export function LoginForm() {
         <div className="h-px flex-1 bg-ink/15" />
       </div>
 
-      <form action={handleMagicLink} className="flex flex-col gap-2">
+      <form action={handleSignIn} className="flex flex-col gap-2">
         <label className="sr-only" htmlFor="email">
           Email
         </label>
@@ -88,7 +71,20 @@ export function LoginForm() {
           name="email"
           type="email"
           required
+          autoComplete="email"
           placeholder="you@email.com"
+          className="h-12 rounded-xs border border-ink/20 bg-surface px-4 font-mono text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
+        />
+        <label className="sr-only" htmlFor="password">
+          Password
+        </label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          required
+          autoComplete="current-password"
+          placeholder="Password"
           className="h-12 rounded-xs border border-ink/20 bg-surface px-4 font-mono text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
         />
         <Button
@@ -98,13 +94,13 @@ export function LoginForm() {
           className="w-full"
           disabled={pending}
         >
-          {pending ? "Sending…" : "Send magic link"}
+          {pending ? "Signing in…" : "Sign in"}
         </Button>
       </form>
 
-      {state.kind === "error" && (
+      {error && (
         <p className="font-mono text-[10px] uppercase tracking-bib text-siren">
-          {state.message}
+          {error}
         </p>
       )}
     </div>

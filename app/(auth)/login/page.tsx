@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
 
 /**
@@ -40,17 +39,7 @@ export default function LoginPage() {
 
         {/* Form card on bone */}
         <div className="rounded-sm bg-bone p-6">
-          <div className="label-bib mb-4">Sign in</div>
           <LoginForm />
-
-          <div className="mt-6 border-t border-ink/10 pt-4 text-center">
-            <p className="font-mono text-[9px] font-bold uppercase tracking-bib text-ink-muted">
-              New here?{" "}
-              <Link href="/onboarding" className="text-ink hover:text-flash">
-                Start your profile →
-              </Link>
-            </p>
-          </div>
         </div>
 
         {/* Legal */}

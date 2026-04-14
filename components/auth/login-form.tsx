@@ -6,32 +6,57 @@ import { Button } from "@/components/ui/button";
 import {
   signInWithGoogle,
   signInWithPassword,
+  signUpWithPassword,
 } from "@/app/(auth)/login/actions";
+
+type Mode = "signin" | "signup";
 
 /**
  * Login form — editorial treatment with sharper inputs and ink buttons.
- * Signs in with email + password via Supabase Auth.
+ * Supports both sign in and sign up via Supabase email + password auth.
  */
 export function LoginForm() {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [mode, setMode] = useState<Mode>("signin");
   const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
 
-  function handleSignIn(formData: FormData) {
+  function handleSubmit(formData: FormData) {
     setError(null);
+    setInfo(null);
     startTransition(async () => {
-      const result = await signInWithPassword(formData);
-      if (result?.error) {
-        setError(result.error);
-        return;
+      if (mode === "signin") {
+        const result = await signInWithPassword(formData);
+        if (result?.error) {
+          setError(result.error);
+          return;
+        }
+        router.push("/");
+        router.refresh();
+      } else {
+        const result = await signUpWithPassword(formData);
+        if (result?.error) {
+          setError(result.error);
+          return;
+        }
+        if (result?.needsConfirmation) {
+          setInfo(
+            "Account created — check your inbox to confirm, then sign in.",
+          );
+          setMode("signin");
+          return;
+        }
+        // Signed in immediately — go finish the profile.
+        router.push("/onboarding");
+        router.refresh();
       }
-      router.push("/");
-      router.refresh();
     });
   }
 
   function handleGoogle() {
     setError(null);
+    setInfo(null);
     startTransition(async () => {
       const result = await signInWithGoogle();
       if (result?.error) {
@@ -40,8 +65,40 @@ export function LoginForm() {
     });
   }
 
+  const isSignup = mode === "signup";
+
   return (
     <div className="flex flex-col gap-3">
+      {/* Sign in / sign up toggle */}
+      <div className="flex rounded-xs border border-ink/15 p-0.5">
+        <button
+          type="button"
+          onClick={() => {
+            setMode("signin");
+            setError(null);
+            setInfo(null);
+          }}
+          className={`flex-1 rounded-xs px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-bib transition ${
+            !isSignup ? "bg-ink text-white" : "text-ink-muted"
+          }`}
+        >
+          Sign in
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setMode("signup");
+            setError(null);
+            setInfo(null);
+          }}
+          className={`flex-1 rounded-xs px-3 py-2 font-mono text-[10px] font-bold uppercase tracking-bib transition ${
+            isSignup ? "bg-ink text-white" : "text-ink-muted"
+          }`}
+        >
+          Sign up
+        </button>
+      </div>
+
       <Button
         size="lg"
         className="w-full"
@@ -62,7 +119,7 @@ export function LoginForm() {
         <div className="h-px flex-1 bg-ink/15" />
       </div>
 
-      <form action={handleSignIn} className="flex flex-col gap-2">
+      <form action={handleSubmit} className="flex flex-col gap-2">
         <label className="sr-only" htmlFor="email">
           Email
         </label>
@@ -83,8 +140,9 @@ export function LoginForm() {
           name="password"
           type="password"
           required
-          autoComplete="current-password"
-          placeholder="Password"
+          minLength={isSignup ? 8 : undefined}
+          autoComplete={isSignup ? "new-password" : "current-password"}
+          placeholder={isSignup ? "Password (8+ characters)" : "Password"}
           className="h-12 rounded-xs border border-ink/20 bg-surface px-4 font-mono text-sm outline-none focus:border-ink focus:ring-1 focus:ring-ink"
         />
         <Button
@@ -94,13 +152,24 @@ export function LoginForm() {
           className="w-full"
           disabled={pending}
         >
-          {pending ? "Signing in…" : "Sign in"}
+          {pending
+            ? isSignup
+              ? "Creating account…"
+              : "Signing in…"
+            : isSignup
+              ? "Create account"
+              : "Sign in"}
         </Button>
       </form>
 
       {error && (
         <p className="font-mono text-[10px] uppercase tracking-bib text-siren">
           {error}
+        </p>
+      )}
+      {info && (
+        <p className="font-mono text-[10px] uppercase tracking-bib text-ink-muted">
+          {info}
         </p>
       )}
     </div>

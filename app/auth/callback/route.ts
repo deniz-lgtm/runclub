@@ -6,7 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
  *
  * This is the redirect target for:
  *   - OAuth sign-in (Google, Apple, etc.)
- *   - Email magic link sign-in
+ *   - Email confirmation links (if Supabase project has confirmation enabled)
  *
  * Supabase redirects the browser here with a `?code=...` query param.
  * We exchange the code for a session (which writes the auth cookie)

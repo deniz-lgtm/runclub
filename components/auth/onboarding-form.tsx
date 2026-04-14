@@ -4,7 +4,11 @@ import { useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { createProfile } from "@/app/(auth)/onboarding/actions";
 
-export function OnboardingForm() {
+export function OnboardingForm({
+  needsAccount = false,
+}: {
+  needsAccount?: boolean;
+}) {
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
@@ -20,6 +24,34 @@ export function OnboardingForm() {
 
   return (
     <form action={handleSubmit} className="flex flex-col gap-5">
+      {needsAccount && (
+        <>
+          <Field label="Email" htmlFor="email">
+            <input
+              id="email"
+              name="email"
+              type="email"
+              required
+              autoComplete="email"
+              className="h-11 w-full rounded-lg border border-border bg-surface px-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+              placeholder="you@email.com"
+            />
+          </Field>
+          <Field label="Password (8+ chars)" htmlFor="password">
+            <input
+              id="password"
+              name="password"
+              type="password"
+              required
+              minLength={8}
+              autoComplete="new-password"
+              className="h-11 w-full rounded-lg border border-border bg-surface px-4 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/30"
+              placeholder="At least 8 characters"
+            />
+          </Field>
+        </>
+      )}
+
       <Field label="Display name" htmlFor="displayName">
         <input
           id="displayName"

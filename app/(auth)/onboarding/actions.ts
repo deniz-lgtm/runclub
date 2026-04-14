@@ -18,14 +18,48 @@ const VALID_DISTANCES: PreferredDistance[] = [
 /**
  * Create (or upsert) the current user's profile row.
  *
- * Called from the onboarding form. Requires an authenticated user —
- * RLS will reject the insert otherwise.
+ * If no auth user exists yet (new signup), the form also carries an
+ * email + password which we use to create the Supabase auth account
+ * first. Once signed in, we write the profile row (RLS would reject
+ * the insert otherwise).
  */
 export async function createProfile(formData: FormData) {
   const supabase = createSupabaseServerClient();
-  const {
+  let {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // New-signup branch: create the auth account before the profile row.
+  if (!user) {
+    const email = String(formData.get("email") ?? "").trim();
+    const password = String(formData.get("password") ?? "");
+    if (!email) {
+      return { error: "Email is required." };
+    }
+    if (password.length < 8) {
+      return { error: "Password must be at least 8 characters." };
+    }
+
+    const { data: signUpData, error: signUpError } = await supabase.auth.signUp(
+      {
+        email,
+        password,
+      },
+    );
+    if (signUpError) {
+      return { error: signUpError.message };
+    }
+    if (!signUpData.session) {
+      // Email-confirmation is enabled on the Supabase project — we can't
+      // create the profile row without a session. Tell the user to
+      // confirm first.
+      return {
+        error:
+          "Check your email to confirm your account, then sign in to finish your profile.",
+      };
+    }
+    user = signUpData.user;
+  }
 
   if (!user) {
     return { error: "You must be signed in to create a profile." };
